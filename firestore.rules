@@ -14,18 +14,16 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(userId));
     }
 
-    function currentUserRole() {
-      return userDoc(request.auth.uid).data.role;
-    }
-
     function userProfileBaseFieldsValid() {
       return request.resource.data.uid == request.auth.uid
         && request.resource.data.email == request.auth.token.email
-        && request.resource.data.role in ['student', 'tutor']
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0
-        && request.resource.data.subjects is list
-        && request.resource.data.bio is string;
+        && request.resource.data.gradeLevel is string
+        && request.resource.data.subjectsHelping is list
+        && request.resource.data.subjectsRequesting is list
+        && request.resource.data.bio is string
+        && request.resource.data.qualifications is string;
     }
 
     function canCreateUserProfile(userId) {

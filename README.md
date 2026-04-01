@@ -49,7 +49,7 @@ Homework4Cash/
 ## Features Included
 
 - Email/password sign up and login with Firebase Auth
-- Firestore user profiles with role, subjects, bio, rating, and review count
+- Firestore user profiles with grade level, help/request subjects, bio, qualifications, rating, and review count
 - Assignment ad creation with validation
 - Dedicated assignments marketplace with subject and price filtering
 - Tutor finder directory with tutor-created listings

@@ -73,9 +73,11 @@ export default function LoginPage() {
         await createUserProfile(credentials.user.uid, {
           name: credentials.user.displayName || "New member",
           email: credentials.user.email || "",
-          role: "student",
-          subjects: [],
+          gradeLevel: "",
+          subjectsHelping: [],
+          subjectsRequesting: [],
           bio: "",
+          qualifications: "",
         });
         router.push("/complete-profile");
         return;

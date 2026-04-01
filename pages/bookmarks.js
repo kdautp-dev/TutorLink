@@ -136,15 +136,25 @@ function BookmarksContent() {
             <article key={bookmark.id} className="card post-card">
               <div className="post-card-top">
                 <div>
-                  <span className="status-badge status-open">{bookmark.role || "member"}</span>
+                  <span className="status-badge status-open">{bookmark.gradeLevel || "member"}</span>
                   <h3>{bookmark.name}</h3>
                 </div>
                 <strong>{renderStars(bookmark.rating)}</strong>
               </div>
               <p>{bookmark.bio || "No bio yet."}</p>
               <div className="post-meta">
+                <span>{bookmark.gradeLevel || "Grade level not listed"}</span>
                 <span>{bookmark.reviewCount || 0} reviews</span>
               </div>
+              {!!bookmark.subjectsHelping?.length && (
+                <div className="subject-list">
+                  {bookmark.subjectsHelping.map((subject) => (
+                    <span key={subject} className="subject-pill">
+                      {subject}
+                    </span>
+                  ))}
+                </div>
+              )}
               <Link href={`/profile/${bookmark.profileId || bookmark.entityId}`} className="button">
                 View profile
               </Link>

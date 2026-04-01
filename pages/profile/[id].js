@@ -4,7 +4,7 @@ import { doc, getDoc } from "firebase/firestore";
 import ReviewList from "@/components/ReviewList";
 import { auth, db, isFirebaseConfigured } from "@/lib/firebase";
 import { useAuth } from "@/components/AuthProvider";
-import { SUBJECT_OPTIONS, USER_ROLES } from "@/lib/constants";
+import { SUBJECT_OPTIONS } from "@/lib/constants";
 import {
   buildProfileBookmark,
   getBookmarks,
@@ -27,9 +27,11 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     name: "",
-    role: USER_ROLES.STUDENT,
-    subjects: "",
+    gradeLevel: "",
+    subjectsHelping: "",
+    subjectsRequesting: "",
     bio: "",
+    qualifications: "",
   });
   const [editError, setEditError] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
@@ -64,9 +66,11 @@ export default function ProfilePage() {
 
     setEditForm({
       name: profile.name || "",
-      role: profile.role || USER_ROLES.STUDENT,
-      subjects: (profile.subjects || []).join(", "),
+      gradeLevel: profile.gradeLevel || "",
+      subjectsHelping: (profile.subjectsHelping || []).join(", "),
+      subjectsRequesting: (profile.subjectsRequesting || []).join(", "),
       bio: profile.bio || "",
+      qualifications: profile.qualifications || "",
     });
   }, [profile]);
 
@@ -211,9 +215,11 @@ export default function ProfilePage() {
       await upsertUserProfile(authUser.uid, {
         name: editForm.name.trim(),
         email: authUser.email,
-        role: editForm.role,
-        subjects: parseSubjects(editForm.subjects),
+        gradeLevel: editForm.gradeLevel.trim(),
+        subjectsHelping: parseSubjects(editForm.subjectsHelping),
+        subjectsRequesting: parseSubjects(editForm.subjectsRequesting),
         bio: editForm.bio.trim(),
+        qualifications: editForm.qualifications.trim(),
       });
 
       const refreshedProfileSnap = await getDoc(doc(db, "users", profile.id));
@@ -238,8 +244,8 @@ export default function ProfilePage() {
             <p className="helper-text">{getDisplayUsername(profile)}</p>
             <div className="profile-stats">
               <div>
-                <span className="label">Role</span>
-                <p>{profile.role}</p>
+                <span className="label">Grade level</span>
+                <p>{profile.gradeLevel || "Not listed"}</p>
               </div>
               <div>
                 <span className="label">Average rating</span>
@@ -250,10 +256,10 @@ export default function ProfilePage() {
               </div>
             </div>
             <div>
-              <span className="label">Subjects</span>
+              <span className="label">Subjects (willing to help)</span>
               <div className="subject-list">
-                {profile.subjects?.length ? (
-                  profile.subjects.map((subject) => (
+                {profile.subjectsHelping?.length ? (
+                  profile.subjectsHelping.map((subject) => (
                     <span key={subject} className="subject-pill">
                       {subject}
                     </span>
@@ -264,8 +270,26 @@ export default function ProfilePage() {
               </div>
             </div>
             <div>
+              <span className="label">Subjects (requesting help)</span>
+              <div className="subject-list">
+                {profile.subjectsRequesting?.length ? (
+                  profile.subjectsRequesting.map((subject) => (
+                    <span key={subject} className="subject-pill">
+                      {subject}
+                    </span>
+                  ))
+                ) : (
+                  <p className="helper-text">No requested subjects listed.</p>
+                )}
+              </div>
+            </div>
+            <div>
               <span className="label">Bio</span>
               <p>{profile.bio || "No bio yet."}</p>
+            </div>
+            <div>
+              <span className="label">Qualifications</span>
+              <p>{profile.qualifications || "No qualifications listed yet."}</p>
             </div>
           </>
         ) : (
@@ -275,23 +299,42 @@ export default function ProfilePage() {
               <input id="edit-name" name="name" value={editForm.name} onChange={handleEditChange} />
             </div>
             <div className="field">
-              <label htmlFor="edit-role">Role</label>
-              <select id="edit-role" name="role" value={editForm.role} onChange={handleEditChange}>
-                <option value={USER_ROLES.STUDENT}>Student</option>
-                <option value={USER_ROLES.TUTOR}>Tutor</option>
-              </select>
-            </div>
-            <div className="field">
-              <label htmlFor="edit-subjects">Subjects</label>
+              <label htmlFor="edit-gradeLevel">Grade level</label>
               <input
-                id="edit-subjects"
-                name="subjects"
-                list="profile-subject-suggestions"
-                placeholder="Calculus, Physics, English"
-                value={editForm.subjects}
+                id="edit-gradeLevel"
+                name="gradeLevel"
+                placeholder="10th grade, AP Calc BC, college freshman"
+                value={editForm.gradeLevel}
                 onChange={handleEditChange}
               />
-              <datalist id="profile-subject-suggestions">
+            </div>
+            <div className="field">
+              <label htmlFor="edit-subjectsHelping">Subjects (willing to help)</label>
+              <input
+                id="edit-subjectsHelping"
+                name="subjectsHelping"
+                list="profile-help-subject-suggestions"
+                placeholder="Calculus, Physics, English"
+                value={editForm.subjectsHelping}
+                onChange={handleEditChange}
+              />
+              <datalist id="profile-help-subject-suggestions">
+                {SUBJECT_OPTIONS.map((subject) => (
+                  <option key={subject} value={subject} />
+                ))}
+              </datalist>
+            </div>
+            <div className="field">
+              <label htmlFor="edit-subjectsRequesting">Subjects (requesting help)</label>
+              <input
+                id="edit-subjectsRequesting"
+                name="subjectsRequesting"
+                list="profile-request-subject-suggestions"
+                placeholder="Chemistry, History, Economics"
+                value={editForm.subjectsRequesting}
+                onChange={handleEditChange}
+              />
+              <datalist id="profile-request-subject-suggestions">
                 {SUBJECT_OPTIONS.map((subject) => (
                   <option key={subject} value={subject} />
                 ))}
@@ -300,6 +343,17 @@ export default function ProfilePage() {
             <div className="field">
               <label htmlFor="edit-bio">Bio</label>
               <textarea id="edit-bio" name="bio" rows="4" value={editForm.bio} onChange={handleEditChange} />
+            </div>
+            <div className="field">
+              <label htmlFor="edit-qualifications">Qualifications</label>
+              <textarea
+                id="edit-qualifications"
+                name="qualifications"
+                rows="3"
+                placeholder="AP scores, tutoring experience, awards, coursework"
+                value={editForm.qualifications}
+                onChange={handleEditChange}
+              />
             </div>
             {editError && <p className="error-text">{editError}</p>}
             <div className="actions-row">
@@ -314,9 +368,11 @@ export default function ProfilePage() {
                   setEditError("");
                   setEditForm({
                     name: profile.name || "",
-                    role: profile.role || USER_ROLES.STUDENT,
-                    subjects: (profile.subjects || []).join(", "),
+                    gradeLevel: profile.gradeLevel || "",
+                    subjectsHelping: (profile.subjectsHelping || []).join(", "),
+                    subjectsRequesting: (profile.subjectsRequesting || []).join(", "),
                     bio: profile.bio || "",
+                    qualifications: profile.qualifications || "",
                   });
                 }}
                 disabled={savingProfile}

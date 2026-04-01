@@ -7,7 +7,7 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import { auth, googleProvider, isFirebaseConfigured } from "@/lib/firebase";
-import { SUBJECT_OPTIONS, USER_ROLES } from "@/lib/constants";
+import { SUBJECT_OPTIONS } from "@/lib/constants";
 import { createUserProfile, getUserProfile } from "@/lib/firestore";
 import { parseSubjects } from "@/lib/utils";
 import { useAuth } from "@/components/AuthProvider";
@@ -19,9 +19,11 @@ export default function SignupPage() {
     name: "",
     email: "",
     password: "",
-    role: USER_ROLES.STUDENT,
-    subjects: "",
+    gradeLevel: "",
+    subjectsHelping: "",
+    subjectsRequesting: "",
     bio: "",
+    qualifications: "",
   });
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -60,9 +62,11 @@ export default function SignupPage() {
       await createUserProfile(credentials.user.uid, {
         name: form.name.trim(),
         email: form.email.trim(),
-        role: form.role,
-        subjects: parseSubjects(form.subjects),
+        gradeLevel: form.gradeLevel.trim(),
+        subjectsHelping: parseSubjects(form.subjectsHelping),
+        subjectsRequesting: parseSubjects(form.subjectsRequesting),
         bio: form.bio.trim(),
+        qualifications: form.qualifications.trim(),
       });
 
       router.push("/verify-email");
@@ -91,9 +95,11 @@ export default function SignupPage() {
         await createUserProfile(credentials.user.uid, {
           name: credentials.user.displayName || form.name.trim() || "New member",
           email: credentials.user.email || "",
-          role: form.role,
-          subjects: parseSubjects(form.subjects),
+          gradeLevel: form.gradeLevel.trim(),
+          subjectsHelping: parseSubjects(form.subjectsHelping),
+          subjectsRequesting: parseSubjects(form.subjectsRequesting),
           bio: form.bio.trim(),
+          qualifications: form.qualifications.trim(),
         });
         router.push("/complete-profile");
         return;
@@ -130,23 +136,42 @@ export default function SignupPage() {
           />
         </div>
         <div className="field">
-          <label htmlFor="role">Role</label>
-          <select id="role" name="role" value={form.role} onChange={handleChange}>
-            <option value={USER_ROLES.STUDENT}>Student</option>
-            <option value={USER_ROLES.TUTOR}>Tutor</option>
-          </select>
-        </div>
-        <div className="field">
-          <label htmlFor="subjects">Subjects</label>
+          <label htmlFor="gradeLevel">Grade level</label>
           <input
-            id="subjects"
-            name="subjects"
-            list="subject-suggestions"
-            placeholder="Calculus, Physics, English"
-            value={form.subjects}
+            id="gradeLevel"
+            name="gradeLevel"
+            placeholder="10th grade, AP Calc AB, college sophomore"
+            value={form.gradeLevel}
             onChange={handleChange}
           />
-          <datalist id="subject-suggestions">
+        </div>
+        <div className="field">
+          <label htmlFor="subjectsHelping">Subjects (willing to help)</label>
+          <input
+            id="subjectsHelping"
+            name="subjectsHelping"
+            list="signup-subject-suggestions"
+            placeholder="Calculus, Physics, English"
+            value={form.subjectsHelping}
+            onChange={handleChange}
+          />
+          <datalist id="signup-subject-suggestions">
+            {SUBJECT_OPTIONS.map((subject) => (
+              <option key={subject} value={subject} />
+            ))}
+          </datalist>
+        </div>
+        <div className="field">
+          <label htmlFor="subjectsRequesting">Subjects (requesting help)</label>
+          <input
+            id="subjectsRequesting"
+            name="subjectsRequesting"
+            list="signup-request-subject-suggestions"
+            placeholder="Chemistry, History, Economics"
+            value={form.subjectsRequesting}
+            onChange={handleChange}
+          />
+          <datalist id="signup-request-subject-suggestions">
             {SUBJECT_OPTIONS.map((subject) => (
               <option key={subject} value={subject} />
             ))}
@@ -155,6 +180,17 @@ export default function SignupPage() {
         <div className="field">
           <label htmlFor="bio">Bio</label>
           <textarea id="bio" name="bio" rows="4" value={form.bio} onChange={handleChange} />
+        </div>
+        <div className="field">
+          <label htmlFor="qualifications">Qualifications</label>
+          <textarea
+            id="qualifications"
+            name="qualifications"
+            rows="3"
+            placeholder="AP scores, tutoring experience, clubs, awards, coursework"
+            value={form.qualifications}
+            onChange={handleChange}
+          />
         </div>
         {!isFirebaseConfigured && (
           <p className="helper-text">Firebase is not configured yet. Sign-up will work after you add env vars.</p>

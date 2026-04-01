@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/components/AuthProvider";
-import { SUBJECT_OPTIONS, USER_ROLES } from "@/lib/constants";
+import { SUBJECT_OPTIONS } from "@/lib/constants";
 import { createUserProfile, upsertUserProfile } from "@/lib/firestore";
 import { parseSubjects } from "@/lib/utils";
 
@@ -11,9 +11,11 @@ function CompleteProfileContent() {
   const { authUser, profile, refreshProfile } = useAuth();
   const [form, setForm] = useState({
     name: "",
-    role: USER_ROLES.STUDENT,
-    subjects: "",
+    gradeLevel: "",
+    subjectsHelping: "",
+    subjectsRequesting: "",
     bio: "",
+    qualifications: "",
   });
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -22,9 +24,11 @@ function CompleteProfileContent() {
     if (profile) {
       setForm({
         name: profile.name || "",
-        role: profile.role || USER_ROLES.STUDENT,
-        subjects: (profile.subjects || []).join(", "),
+        gradeLevel: profile.gradeLevel || "",
+        subjectsHelping: (profile.subjectsHelping || []).join(", "),
+        subjectsRequesting: (profile.subjectsRequesting || []).join(", "),
         bio: profile.bio || "",
+        qualifications: profile.qualifications || "",
       });
       return;
     }
@@ -62,9 +66,11 @@ function CompleteProfileContent() {
       const profilePayload = {
         name: form.name.trim(),
         email: authUser.email,
-        role: form.role,
-        subjects: parseSubjects(form.subjects),
+        gradeLevel: form.gradeLevel.trim(),
+        subjectsHelping: parseSubjects(form.subjectsHelping),
+        subjectsRequesting: parseSubjects(form.subjectsRequesting),
         bio: form.bio.trim(),
+        qualifications: form.qualifications.trim(),
       };
 
       if (profile) {
@@ -74,7 +80,7 @@ function CompleteProfileContent() {
       }
 
       await refreshProfile();
-      router.push(form.role === USER_ROLES.STUDENT ? "/post?type=assignment" : "/");
+      router.push("/");
     } catch (submitError) {
       setError(submitError.message || "Unable to save your profile.");
     } finally {
@@ -87,7 +93,7 @@ function CompleteProfileContent() {
       <div>
         <h1>Complete your profile</h1>
         <p className="helper-text">
-          Your sign-in is active, but your profile document needs to be saved before role-based features unlock.
+          Your sign-in is active, but your profile document still needs a few details before the rest of the site feels complete.
         </p>
       </div>
 
@@ -97,23 +103,42 @@ function CompleteProfileContent() {
           <input id="name" name="name" value={form.name} onChange={handleChange} />
         </div>
         <div className="field">
-          <label htmlFor="role">Role</label>
-          <select id="role" name="role" value={form.role} onChange={handleChange}>
-            <option value={USER_ROLES.STUDENT}>Student</option>
-            <option value={USER_ROLES.TUTOR}>Tutor</option>
-          </select>
-        </div>
-        <div className="field">
-          <label htmlFor="subjects">Subjects</label>
+          <label htmlFor="gradeLevel">Grade level</label>
           <input
-            id="subjects"
-            name="subjects"
-            list="complete-profile-subjects"
-            placeholder="Calculus, Physics, English"
-            value={form.subjects}
+            id="gradeLevel"
+            name="gradeLevel"
+            placeholder="10th grade, AP Bio, college sophomore"
+            value={form.gradeLevel}
             onChange={handleChange}
           />
-          <datalist id="complete-profile-subjects">
+        </div>
+        <div className="field">
+          <label htmlFor="subjectsHelping">Subjects (willing to help)</label>
+          <input
+            id="subjectsHelping"
+            name="subjectsHelping"
+            list="complete-profile-help-subjects"
+            placeholder="Calculus, Physics, English"
+            value={form.subjectsHelping}
+            onChange={handleChange}
+          />
+          <datalist id="complete-profile-help-subjects">
+            {SUBJECT_OPTIONS.map((subject) => (
+              <option key={subject} value={subject} />
+            ))}
+          </datalist>
+        </div>
+        <div className="field">
+          <label htmlFor="subjectsRequesting">Subjects (requesting help)</label>
+          <input
+            id="subjectsRequesting"
+            name="subjectsRequesting"
+            list="complete-profile-request-subjects"
+            placeholder="Chemistry, History, Economics"
+            value={form.subjectsRequesting}
+            onChange={handleChange}
+          />
+          <datalist id="complete-profile-request-subjects">
             {SUBJECT_OPTIONS.map((subject) => (
               <option key={subject} value={subject} />
             ))}
@@ -122,6 +147,17 @@ function CompleteProfileContent() {
         <div className="field">
           <label htmlFor="bio">Bio</label>
           <textarea id="bio" name="bio" rows="4" value={form.bio} onChange={handleChange} />
+        </div>
+        <div className="field">
+          <label htmlFor="qualifications">Qualifications</label>
+          <textarea
+            id="qualifications"
+            name="qualifications"
+            rows="3"
+            placeholder="AP scores, tutoring experience, leadership, awards, coursework"
+            value={form.qualifications}
+            onChange={handleChange}
+          />
         </div>
         {error && <p className="error-text">{error}</p>}
         <button type="submit" className="button" disabled={submitting}>
