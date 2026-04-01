@@ -14,22 +14,29 @@ export default function HomePage() {
       </div>
 
       <div className="choice-grid">
-        <Link href="/assignments" className="card choice-card">
+        <div className="card choice-card">
           <p className="eyebrow">Student path</p>
           <h2>I need help on an assignment</h2>
           <p>
-            Browse open homework requests, filter by subject and price, and create a post when you need support.
+            Choose whether you want to post your own assignment or browse tutors who are already advertising their expertise.
           </p>
-          <span className="button">Go to assignments</span>
-        </Link>
+          <div className="actions-row">
+            <Link href="/create-post" className="button">
+              Post assignment
+            </Link>
+            <Link href="/tutors" className="button button-secondary">
+              Tutor finder
+            </Link>
+          </div>
+        </div>
 
-        <Link href="/tutors" className="card choice-card">
+        <Link href="/assignments" className="card choice-card">
           <p className="eyebrow">Tutor path</p>
           <h2>I want to become a tutor</h2>
           <p>
-            Create a tutor listing, showcase your subjects and hourly rate, and let students discover your profile.
+            Browse live assignment requests and jump straight into helping people who need tutoring.
           </p>
-          <span className="button">Go to tutor finder</span>
+          <span className="button">Go to assignments</span>
         </Link>
       </div>
     </section>

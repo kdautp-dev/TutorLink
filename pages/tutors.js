@@ -3,6 +3,7 @@ import { collection, onSnapshot, orderBy, query, where } from "firebase/firestor
 import TutorCard from "@/components/TutorCard";
 import TutorFilters from "@/components/TutorFilters";
 import { db, isFirebaseConfigured } from "@/lib/firebase";
+import { getUserProfile } from "@/lib/firestore";
 
 export default function TutorsPage() {
   const [listings, setListings] = useState([]);
@@ -29,14 +30,27 @@ export default function TutorsPage() {
     const unsubscribe = onSnapshot(
       listingsQuery,
       (snapshot) => {
-        const nextListings = snapshot.docs.map((docSnap) => ({
-          id: docSnap.id,
-          ...docSnap.data(),
-        }));
+        Promise.all(
+          snapshot.docs.map(async (docSnap) => {
+            const listing = { id: docSnap.id, ...docSnap.data() };
+            const tutorProfile = await getUserProfile(listing.tutorId);
 
-        setFeedError("");
-        setListings(nextListings);
-        setLoading(false);
+            return {
+              ...listing,
+              rating: tutorProfile?.rating || 0,
+              reviewCount: tutorProfile?.reviewCount || 0,
+            };
+          })
+        )
+          .then((nextListings) => {
+            setFeedError("");
+            setListings(nextListings);
+            setLoading(false);
+          })
+          .catch((error) => {
+            setFeedError(error.message || "Unable to load tutor listings.");
+            setLoading(false);
+          });
       },
       (error) => {
         setFeedError(

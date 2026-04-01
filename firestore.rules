@@ -111,6 +111,11 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    match /users/{userId}/bookmarks/{bookmarkId} {
+      allow read, create, delete: if isOwner(userId);
+      allow update: if false;
+    }
+
     match /posts/{postId} {
       allow read: if true;
       allow create: if canCreatePost();

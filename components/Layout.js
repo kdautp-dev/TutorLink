@@ -25,9 +25,9 @@ export default function Layout({ children }) {
             <Link href="/">Home</Link>
             <Link href="/assignments">Assignments</Link>
             <Link href="/tutors">Tutor Finder</Link>
-            <Link href="/people">People</Link>
             {authUser && <Link href="/create-post">Post Assignment</Link>}
             {authUser && <Link href="/create-tutor-listing">Become a Tutor</Link>}
+            {authUser && <Link href="/bookmarks">Bookmarks</Link>}
             {authUser && profile && <Link href={`/profile/${profile.uid}`}>Profile</Link>}
             {authUser && !profile && <Link href="/complete-profile">Complete Profile</Link>}
             {!authUser && <Link href="/login">Log In</Link>}

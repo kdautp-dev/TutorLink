@@ -4,8 +4,14 @@ import { doc, getDoc } from "firebase/firestore";
 import ReviewList from "@/components/ReviewList";
 import { auth, db, isFirebaseConfigured } from "@/lib/firebase";
 import { useAuth } from "@/components/AuthProvider";
-import { getProfileRatings, getTutorReviews, submitProfileRating } from "@/lib/firestore";
-import { clampRating } from "@/lib/utils";
+import {
+  getBookmarks,
+  getProfileRatings,
+  getTutorReviews,
+  submitProfileRating,
+  toggleBookmark,
+} from "@/lib/firestore";
+import { clampRating, renderStars } from "@/lib/utils";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -18,6 +24,8 @@ export default function ProfilePage() {
   const [ratingForm, setRatingForm] = useState({ rating: "5", comment: "" });
   const [ratingError, setRatingError] = useState("");
   const [submittingRating, setSubmittingRating] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [bookmarkBusy, setBookmarkBusy] = useState(false);
   const hasRatedProfile = useMemo(() => {
     if (!authUser) return false;
 
@@ -88,6 +96,30 @@ export default function ProfilePage() {
 
   const canRateProfile = authUser && authUser.uid !== profile.id && !hasRatedProfile;
 
+  useEffect(() => {
+    async function loadBookmarks() {
+      if (!authUser || !profile) return;
+
+      const bookmarks = await getBookmarks(authUser.uid);
+      setIsBookmarked(bookmarks.some((bookmark) => bookmark.profileId === profile.id));
+    }
+
+    loadBookmarks();
+  }, [authUser, profile]);
+
+  async function handleBookmarkToggle() {
+    if (!authUser || !profile) return;
+
+    setBookmarkBusy(true);
+
+    try {
+      const nextState = await toggleBookmark({ ownerId: authUser.uid, profile });
+      setIsBookmarked(nextState);
+    } finally {
+      setBookmarkBusy(false);
+    }
+  }
+
   async function handleProfileRatingSubmit(event) {
     event.preventDefault();
     setRatingError("");
@@ -134,7 +166,9 @@ export default function ProfilePage() {
           </div>
           <div>
             <span className="label">Average rating</span>
-            <p>{profile.rating ? `${profile.rating}/5` : "No ratings yet"}</p>
+            <p className="rating-line">
+              {renderStars(profile.rating)} <span>{profile.reviewCount || 0} reviews</span>
+            </p>
           </div>
         </div>
         <div>
@@ -155,6 +189,16 @@ export default function ProfilePage() {
           <span className="label">Bio</span>
           <p>{profile.bio || "No bio yet."}</p>
         </div>
+        {authUser && authUser.uid !== profile.id && (
+          <button
+            type="button"
+            className="button"
+            onClick={handleBookmarkToggle}
+            disabled={bookmarkBusy}
+          >
+            {bookmarkBusy ? "Saving..." : isBookmarked ? "Remove bookmark" : "Bookmark profile"}
+          </button>
+        )}
       </article>
 
       {canRateProfile && (

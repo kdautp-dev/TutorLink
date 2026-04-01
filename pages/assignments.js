@@ -4,6 +4,7 @@ import PostCard from "@/components/PostCard";
 import PostFilters from "@/components/PostFilters";
 import { db, isFirebaseConfigured } from "@/lib/firebase";
 import { POST_STATUSES } from "@/lib/constants";
+import { getUserProfile } from "@/lib/firestore";
 
 export default function AssignmentsPage() {
   const [posts, setPosts] = useState([]);
@@ -30,14 +31,27 @@ export default function AssignmentsPage() {
     const unsubscribe = onSnapshot(
       postsQuery,
       (snapshot) => {
-        const nextPosts = snapshot.docs.map((docSnap) => ({
-          id: docSnap.id,
-          ...docSnap.data(),
-        }));
+        Promise.all(
+          snapshot.docs.map(async (docSnap) => {
+            const post = { id: docSnap.id, ...docSnap.data() };
+            const creatorProfile = await getUserProfile(post.creatorId);
 
-        setFeedError("");
-        setPosts(nextPosts);
-        setLoading(false);
+            return {
+              ...post,
+              creatorRating: creatorProfile?.rating || 0,
+              creatorReviewCount: creatorProfile?.reviewCount || 0,
+            };
+          })
+        )
+          .then((nextPosts) => {
+            setFeedError("");
+            setPosts(nextPosts);
+            setLoading(false);
+          })
+          .catch((error) => {
+            setFeedError(error.message || "Unable to load assignments.");
+            setLoading(false);
+          });
       },
       (error) => {
         setFeedError(

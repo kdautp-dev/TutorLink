@@ -5,14 +5,15 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { useAuth } from "@/components/AuthProvider";
 import { db, isFirebaseConfigured } from "@/lib/firebase";
 import { POST_STATUSES } from "@/lib/constants";
-import { claimPost, deletePost } from "@/lib/firestore";
-import { formatDate } from "@/lib/utils";
+import { claimPost, deletePost, getUserProfile } from "@/lib/firestore";
+import { formatDate, renderStars } from "@/lib/utils";
 
 function PostDetailContent() {
   const router = useRouter();
   const { id } = router.query;
   const { authUser, profile } = useAuth();
   const [post, setPost] = useState(null);
+  const [creatorProfile, setCreatorProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionError, setActionError] = useState("");
   const [busyAction, setBusyAction] = useState("");
@@ -24,8 +25,17 @@ function PostDetailContent() {
     }
 
     const unsubscribe = onSnapshot(doc(db, "posts", id), (snapshot) => {
-      setPost(snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null);
-      setLoading(false);
+      const nextPost = snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
+      setPost(nextPost);
+
+      if (nextPost?.creatorId) {
+        getUserProfile(nextPost.creatorId)
+          .then((profileData) => setCreatorProfile(profileData))
+          .finally(() => setLoading(false));
+      } else {
+        setCreatorProfile(null);
+        setLoading(false);
+      }
     });
 
     return unsubscribe;
@@ -136,6 +146,10 @@ function PostDetailContent() {
             <span className="label">Posted by</span>
             <p>
               <Link href={`/profile/${post.creatorId}`}>{post.creatorName || "User"}</Link>
+            </p>
+            <p className="rating-line">
+              {renderStars(creatorProfile?.rating)}{" "}
+              <span>{creatorProfile?.reviewCount || 0} reviews</span>
             </p>
           </div>
         </div>

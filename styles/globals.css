@@ -317,6 +317,12 @@ textarea {
   color: var(--muted);
 }
 
+.rating-line {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
 .checkbox-row {
   display: flex;
   align-items: center;
