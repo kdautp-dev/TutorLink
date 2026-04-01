@@ -34,7 +34,7 @@ export default function HomePage() {
           <p className="eyebrow">Helper path</p>
           <h2>I want to help</h2>
           <p>
-            Browse open assignments to earn money, or post your own helper listing so people can contact you directly.
+            Browse open assignments to complete homework 4Cash, or post your own helper listing so people can contact you directly.
           </p>
           <div className="actions-row">
             <Link href="/assignments" className="button">
