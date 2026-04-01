@@ -6,7 +6,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { db, isFirebaseConfigured } from "@/lib/firebase";
 import { POST_STATUSES } from "@/lib/constants";
 import { claimPost, deletePost, getUserProfile } from "@/lib/firestore";
-import { formatDate, getDisplayUsername, renderStars } from "@/lib/utils";
+import { formatDate, getDisplayUsername, getPostExpiryDate, isPostExpired, renderStars } from "@/lib/utils";
 
 function PostDetailContent() {
   const router = useRouter();
@@ -17,6 +17,8 @@ function PostDetailContent() {
   const [loading, setLoading] = useState(true);
   const [actionError, setActionError] = useState("");
   const [busyAction, setBusyAction] = useState("");
+  const expired = isPostExpired(post);
+  const expiresAt = getPostExpiryDate(post);
 
   useEffect(() => {
     if (!id || !isFirebaseConfigured || !db) {
@@ -45,10 +47,11 @@ function PostDetailContent() {
     return (
       authUser &&
       post?.status === POST_STATUSES.OPEN &&
+      !expired &&
       post?.creatorId !== authUser.uid &&
       !(post?.interestedHelperIds || []).includes(authUser.uid)
     );
-  }, [authUser, post]);
+  }, [authUser, expired, post]);
 
   const canDeletePost = authUser && post && post.creatorId === authUser.uid;
   const hasOfferedHelp = authUser && (post?.interestedHelperIds || []).includes(authUser.uid);
@@ -57,7 +60,7 @@ function PostDetailContent() {
     post &&
     authUser &&
     (post.creatorId === authUser.uid ||
-      (post.interestedHelperIds || []).includes(authUser.uid));
+      (!expired && (post.interestedHelperIds || []).includes(authUser.uid)));
 
   async function handleClaim() {
     setBusyAction("claim");
@@ -142,6 +145,10 @@ function PostDetailContent() {
             <p>{post.deadline ? formatDate(post.deadline) : "No deadline"}</p>
           </div>
           <div>
+            <span className="label">Expires</span>
+            <p>{expiresAt ? formatDate(expiresAt) : "Unknown"}</p>
+          </div>
+          <div>
             <span className="label">Helpers interested</span>
             <p>{post.helperInterestCount || 0}</p>
           </div>
@@ -168,6 +175,14 @@ function PostDetailContent() {
         )}
 
         {actionError && <p className="error-text">{actionError}</p>}
+        {expired && (
+          <div className="info-box">
+            <strong>This post has expired.</strong>
+            <p className="helper-text">
+              Expired posts stay visible for reference, but new helpers cannot unlock contact info or offer help.
+            </p>
+          </div>
+        )}
 
         <div className="actions-row">
           {canClaim && (
@@ -176,7 +191,7 @@ function PostDetailContent() {
             </button>
           )}
 
-          {hasOfferedHelp && (
+          {hasOfferedHelp && !expired && (
             <button type="button" className="button button-secondary" disabled>
               You offered help
             </button>

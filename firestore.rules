@@ -55,6 +55,8 @@ service cloud.firestore {
         && request.resource.data.contactInfo is string
         && request.resource.data.contactInfo.size() > 0
         && request.resource.data.preferredPaymentMethod is string
+        && request.resource.data.expiresAt is timestamp
+        && request.resource.data.expiresAt > request.time
         && request.resource.data.status == 'open'
         && request.resource.data.priceOffered is number
         && request.resource.data.priceOffered > 0
@@ -70,6 +72,7 @@ service cloud.firestore {
     function canUserClaimPost() {
       return isSignedIn()
         && resource.data.status == 'open'
+        && (!('expiresAt' in resource.data) || request.time < resource.data.expiresAt)
         && resource.data.creatorId != request.auth.uid
         && request.resource.data.creatorId == resource.data.creatorId
         && request.resource.data.creatorName == resource.data.creatorName
@@ -83,6 +86,7 @@ service cloud.firestore {
         && request.resource.data.priceOffered == resource.data.priceOffered
         && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.deadline == resource.data.deadline
+        && request.resource.data.expiresAt == resource.data.expiresAt
         && request.resource.data.status == resource.data.status
         && request.resource.data.helperId == resource.data.helperId
         && request.resource.data.helperName == resource.data.helperName

@@ -1,11 +1,15 @@
 import Link from "next/link";
-import { formatDate, getDisplayUsername, renderStars } from "@/lib/utils";
+import { formatDate, getDisplayUsername, getPostExpiryDate, isPostExpired, renderStars } from "@/lib/utils";
 
 export default function PostCard({ post, isBookmarked = false, onToggleBookmark, bookmarkBusy = false }) {
+  const expired = isPostExpired(post);
+  const expiresAt = getPostExpiryDate(post);
+
   return (
     <article className="card post-card">
       <div className="post-card-top">
         <div>
+          {expired && <span className="status-badge status-expired">expired</span>}
           <h3>{post.title}</h3>
           <p className="rating-line">
             {renderStars(post.creatorRating)} {getDisplayUsername(post.creatorProfile)}{" "}
@@ -39,7 +43,7 @@ export default function PostCard({ post, isBookmarked = false, onToggleBookmark,
         <span>{post.subject}</span>
         <span>{post.gradeLevel || "Any grade level"}</span>
         <span>{post.helperInterestCount || 0} people offered help</span>
-        <span>{post.deadline ? `Due ${formatDate(post.deadline)}` : "No deadline"}</span>
+        <span>{post.deadline ? `Due ${formatDate(post.deadline)}` : `Expires ${formatDate(expiresAt)}`}</span>
         <span>Posted {formatDate(post.createdAt)}</span>
       </div>
       <Link href={`/post/${post.id}`} className="button">

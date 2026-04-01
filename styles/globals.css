@@ -445,6 +445,11 @@ textarea:focus {
   color: #7b6651;
 }
 
+.status-expired {
+  background: #efe4d6;
+  color: #7c5f42;
+}
+
 .subject-list {
   display: flex;
   flex-wrap: wrap;

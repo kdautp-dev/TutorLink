@@ -121,6 +121,10 @@ function PostPageContent() {
           throw new Error("Price must be greater than 0.");
         }
 
+        if (assignmentForm.deadline && new Date(assignmentForm.deadline).getTime() <= Date.now()) {
+          throw new Error("Deadline must be in the future.");
+        }
+
         const dailyCount = await getDailyPostCount(authUser.uid);
         if (dailyCount >= 10) {
           throw new Error("You have reached the 10-post daily limit for assignments and tutor ads.");
