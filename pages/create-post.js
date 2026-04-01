@@ -4,7 +4,7 @@ import { useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/components/AuthProvider";
 import { SUBJECT_OPTIONS } from "@/lib/constants";
-import { createPost } from "@/lib/firestore";
+import { createPost, getDailyPostCount } from "@/lib/firestore";
 import { withTimeout } from "@/lib/utils";
 
 function CreatePostContent() {
@@ -44,6 +44,12 @@ function CreatePostContent() {
     setSubmitting(true);
 
     try {
+      const dailyCount = await getDailyPostCount(authUser.uid);
+
+      if (dailyCount >= 10) {
+        throw new Error("You have reached the 10-post daily limit for assignments and tutor ads.");
+      }
+
       const docRef = await withTimeout(
         createPost({
           ...form,

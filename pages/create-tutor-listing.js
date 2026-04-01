@@ -3,7 +3,12 @@ import { useRouter } from "next/router";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/components/AuthProvider";
 import { SUBJECT_OPTIONS } from "@/lib/constants";
-import { deleteTutorListing, getTutorListing, upsertTutorListing } from "@/lib/firestore";
+import {
+  deleteTutorListing,
+  getDailyPostCount,
+  getTutorListing,
+  upsertTutorListing,
+} from "@/lib/firestore";
 import { parseSubjects } from "@/lib/utils";
 
 function CreateTutorListingContent() {
@@ -78,6 +83,14 @@ function CreateTutorListingContent() {
     setSubmitting(true);
 
     try {
+      if (!hasExistingListing) {
+        const dailyCount = await getDailyPostCount(authUser.uid);
+
+        if (dailyCount >= 10) {
+          throw new Error("You have reached the 10-post daily limit for assignments and tutor ads.");
+        }
+      }
+
       await upsertTutorListing(authUser.uid, {
         name: profile.name,
         email: profile.email,

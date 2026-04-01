@@ -5,7 +5,7 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { useAuth } from "@/components/AuthProvider";
 import { db, isFirebaseConfigured } from "@/lib/firebase";
 import { POST_STATUSES } from "@/lib/constants";
-import { claimPost, deletePost, reportPost } from "@/lib/firestore";
+import { claimPost, deletePost } from "@/lib/firestore";
 import { formatDate } from "@/lib/utils";
 
 function PostDetailContent() {
@@ -15,7 +15,6 @@ function PostDetailContent() {
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionError, setActionError] = useState("");
-  const [reportReason, setReportReason] = useState("");
   const [busyAction, setBusyAction] = useState("");
 
   useEffect(() => {
@@ -76,30 +75,6 @@ function PostDetailContent() {
       router.push("/assignments");
     } catch (error) {
       setActionError(error.message || "Unable to delete this post.");
-    } finally {
-      setBusyAction("");
-    }
-  }
-
-  async function handleReport() {
-    setActionError("");
-
-    if (!reportReason.trim()) {
-      setActionError("Please enter a reason before reporting the post.");
-      return;
-    }
-
-    setBusyAction("report");
-
-    try {
-      await reportPost({
-        postId: post.id,
-        reporterId: authUser.uid,
-        reason: reportReason.trim(),
-      });
-      setReportReason("");
-    } catch (error) {
-      setActionError(error.message || "Unable to submit report.");
     } finally {
       setBusyAction("");
     }
@@ -204,20 +179,10 @@ function PostDetailContent() {
       </article>
 
       {authUser && (
-        <div className="card form-card">
-          <h2>Report post</h2>
-          <div className="field">
-            <label htmlFor="report-reason">Reason</label>
-            <textarea
-              id="report-reason"
-              rows="3"
-              value={reportReason}
-              onChange={(event) => setReportReason(event.target.value)}
-            />
-          </div>
-          <button type="button" className="button button-secondary" onClick={handleReport}>
-            {busyAction === "report" ? "Sending..." : "Report post"}
-          </button>
+        <div className="card">
+          <p className="helper-text">
+            If you offered help, reach out directly using the contact info above to ask whether tutoring is still needed.
+          </p>
         </div>
       )}
     </section>
