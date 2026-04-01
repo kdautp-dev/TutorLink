@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { renderStars } from "@/lib/utils";
+import { getDisplayUsername, renderStars } from "@/lib/utils";
 
 export default function TutorCard({ listing }) {
   return (
@@ -11,7 +11,8 @@ export default function TutorCard({ listing }) {
           </span>
           <h3>{listing.title}</h3>
           <p className="rating-line">
-            {renderStars(listing.rating)} <span>{listing.reviewCount || 0} reviews</span>
+            {renderStars(listing.rating)} {getDisplayUsername(listing.tutorProfile)}{" "}
+            <span>{listing.reviewCount || 0} reviews</span>
           </p>
         </div>
         <strong>${Number(listing.hourlyRate || 0).toFixed(2)}/hr</strong>

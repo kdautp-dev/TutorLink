@@ -37,6 +37,7 @@ export default function TutorsPage() {
 
             return {
               ...listing,
+              tutorProfile,
               rating: tutorProfile?.rating || 0,
               reviewCount: tutorProfile?.reviewCount || 0,
             };

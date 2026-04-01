@@ -11,7 +11,7 @@ import {
   submitProfileRating,
   toggleBookmark,
 } from "@/lib/firestore";
-import { clampRating, renderStars } from "@/lib/utils";
+import { clampRating, getDisplayUsername, renderStars } from "@/lib/utils";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -31,6 +31,21 @@ export default function ProfilePage() {
 
     return profileRatings.some((rating) => rating.raterId === authUser.uid);
   }, [authUser, profileRatings]);
+
+  useEffect(() => {
+    async function loadBookmarks() {
+      if (!authUser || !profile) return;
+
+      try {
+        const bookmarks = await getBookmarks(authUser.uid);
+        setIsBookmarked(bookmarks.some((bookmark) => bookmark.profileId === profile.id));
+      } catch {
+        setIsBookmarked(false);
+      }
+    }
+
+    loadBookmarks();
+  }, [authUser, profile]);
 
   useEffect(() => {
     if (!id || !isFirebaseConfigured || !db) {
@@ -96,17 +111,6 @@ export default function ProfilePage() {
 
   const canRateProfile = authUser && authUser.uid !== profile.id && !hasRatedProfile;
 
-  useEffect(() => {
-    async function loadBookmarks() {
-      if (!authUser || !profile) return;
-
-      const bookmarks = await getBookmarks(authUser.uid);
-      setIsBookmarked(bookmarks.some((bookmark) => bookmark.profileId === profile.id));
-    }
-
-    loadBookmarks();
-  }, [authUser, profile]);
-
   async function handleBookmarkToggle() {
     if (!authUser || !profile) return;
 
@@ -159,6 +163,7 @@ export default function ProfilePage() {
     <section className="stack-lg">
       <article className="card profile-card">
         <h1>{profile.name}</h1>
+        <p className="helper-text">{getDisplayUsername(profile)}</p>
         <div className="profile-stats">
           <div>
             <span className="label">Role</span>
@@ -167,7 +172,8 @@ export default function ProfilePage() {
           <div>
             <span className="label">Average rating</span>
             <p className="rating-line">
-              {renderStars(profile.rating)} <span>{profile.reviewCount || 0} reviews</span>
+              {renderStars(profile.rating)} {getDisplayUsername(profile)}{" "}
+              <span>{profile.reviewCount || 0} reviews</span>
             </p>
           </div>
         </div>

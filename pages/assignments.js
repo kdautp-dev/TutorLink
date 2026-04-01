@@ -38,6 +38,7 @@ export default function AssignmentsPage() {
 
             return {
               ...post,
+              creatorProfile,
               creatorRating: creatorProfile?.rating || 0,
               creatorReviewCount: creatorProfile?.reviewCount || 0,
             };

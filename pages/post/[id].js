@@ -6,7 +6,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { db, isFirebaseConfigured } from "@/lib/firebase";
 import { POST_STATUSES } from "@/lib/constants";
 import { claimPost, deletePost, getUserProfile } from "@/lib/firestore";
-import { formatDate, renderStars } from "@/lib/utils";
+import { formatDate, getDisplayUsername, renderStars } from "@/lib/utils";
 
 function PostDetailContent() {
   const router = useRouter();
@@ -117,7 +117,6 @@ function PostDetailContent() {
       <article className="card detail-card">
         <div className="detail-header">
           <div>
-            <span className={`status-badge status-${post.status}`}>{post.status}</span>
             <h1>{post.title}</h1>
           </div>
           <strong>${Number(post.priceOffered || 0).toFixed(2)}</strong>
@@ -148,7 +147,7 @@ function PostDetailContent() {
               <Link href={`/profile/${post.creatorId}`}>{post.creatorName || "User"}</Link>
             </p>
             <p className="rating-line">
-              {renderStars(creatorProfile?.rating)}{" "}
+              {renderStars(creatorProfile?.rating)} {getDisplayUsername(creatorProfile)}{" "}
               <span>{creatorProfile?.reviewCount || 0} reviews</span>
             </p>
           </div>

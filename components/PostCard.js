@@ -1,15 +1,15 @@
 import Link from "next/link";
-import { formatDate, renderStars } from "@/lib/utils";
+import { formatDate, getDisplayUsername, renderStars } from "@/lib/utils";
 
 export default function PostCard({ post }) {
   return (
     <article className="card post-card">
       <div className="post-card-top">
         <div>
-          <span className={`status-badge status-${post.status}`}>{post.status}</span>
           <h3>{post.title}</h3>
           <p className="rating-line">
-            {renderStars(post.creatorRating)} <span>{post.creatorReviewCount || 0} reviews</span>
+            {renderStars(post.creatorRating)} {getDisplayUsername(post.creatorProfile)}{" "}
+            <span>{post.creatorReviewCount || 0} reviews</span>
           </p>
         </div>
         <strong>${Number(post.priceOffered || 0).toFixed(2)}</strong>
