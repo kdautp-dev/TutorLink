@@ -32,6 +32,16 @@ a {
   text-decoration: none;
 }
 
+.link-button {
+  border: 0;
+  background: transparent;
+  color: var(--primary-dark);
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+}
+
 button,
 input,
 select,

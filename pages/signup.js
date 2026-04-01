@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth, isFirebaseConfigured } from "@/lib/firebase";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  signInWithPopup,
+} from "firebase/auth";
+import { auth, googleProvider, isFirebaseConfigured } from "@/lib/firebase";
 import { SUBJECT_OPTIONS, USER_ROLES } from "@/lib/constants";
-import { createUserProfile } from "@/lib/firestore";
+import { createUserProfile, getUserProfile } from "@/lib/firestore";
 import { parseSubjects } from "@/lib/utils";
 import { useAuth } from "@/components/AuthProvider";
 
@@ -51,6 +55,7 @@ export default function SignupPage() {
 
     try {
       const credentials = await createUserWithEmailAndPassword(auth, form.email, form.password);
+      await sendEmailVerification(credentials.user);
 
       await createUserProfile(credentials.user.uid, {
         name: form.name.trim(),
@@ -60,9 +65,43 @@ export default function SignupPage() {
         bio: form.bio.trim(),
       });
 
-      router.push("/");
+      router.push("/verify-email");
     } catch (submitError) {
       setError(submitError.message || "Unable to create your account.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleGoogleSignup() {
+    setError("");
+
+    if (!isFirebaseConfigured || !auth || !googleProvider) {
+      setError("Firebase is not configured yet. Add your environment variables first.");
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const credentials = await signInWithPopup(auth, googleProvider);
+      const existingProfile = await getUserProfile(credentials.user.uid);
+
+      if (!existingProfile) {
+        await createUserProfile(credentials.user.uid, {
+          name: credentials.user.displayName || form.name.trim() || "New member",
+          email: credentials.user.email || "",
+          role: form.role,
+          subjects: parseSubjects(form.subjects),
+          bio: form.bio.trim(),
+        });
+        router.push("/complete-profile");
+        return;
+      }
+
+      router.push("/");
+    } catch (submitError) {
+      setError(submitError.message || "Unable to sign up with Google.");
     } finally {
       setSubmitting(false);
     }
@@ -124,6 +163,12 @@ export default function SignupPage() {
         <button type="submit" className="button" disabled={submitting}>
           {submitting ? "Creating account..." : "Sign up"}
         </button>
+        <button type="button" className="button button-secondary" onClick={handleGoogleSignup} disabled={submitting}>
+          Continue with Google
+        </button>
+        <p className="helper-text">
+          Email signups must verify their email before they can use the site.
+        </p>
         <p className="helper-text">
           Already have an account? <Link href="/login">Log in</Link>
         </p>

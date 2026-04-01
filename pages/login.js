@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth, isFirebaseConfigured } from "@/lib/firebase";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { auth, googleProvider, isFirebaseConfigured } from "@/lib/firebase";
 import { useAuth } from "@/components/AuthProvider";
+import { createUserProfile, getUserProfile } from "@/lib/firestore";
+import { requiresEmailVerification } from "@/lib/utils";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -40,10 +42,48 @@ export default function LoginPage() {
     setSubmitting(true);
 
     try {
-      await signInWithEmailAndPassword(auth, form.email, form.password);
+      const credentials = await signInWithEmailAndPassword(auth, form.email, form.password);
+      if (requiresEmailVerification(credentials.user)) {
+        router.push("/verify-email");
+        return;
+      }
       router.push("/");
     } catch (submitError) {
       setError(submitError.message || "Unable to sign in.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleGoogleSignIn() {
+    setError("");
+
+    if (!isFirebaseConfigured || !auth || !googleProvider) {
+      setError("Firebase is not configured yet. Add your environment variables first.");
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const credentials = await signInWithPopup(auth, googleProvider);
+      const existingProfile = await getUserProfile(credentials.user.uid);
+
+      if (!existingProfile) {
+        await createUserProfile(credentials.user.uid, {
+          name: credentials.user.displayName || "New member",
+          email: credentials.user.email || "",
+          role: "student",
+          subjects: [],
+          bio: "",
+        });
+        router.push("/complete-profile");
+        return;
+      }
+
+      router.push("/");
+    } catch (submitError) {
+      setError(submitError.message || "Unable to sign in with Google.");
     } finally {
       setSubmitting(false);
     }
@@ -74,6 +114,12 @@ export default function LoginPage() {
         <button type="submit" className="button" disabled={submitting}>
           {submitting ? "Logging in..." : "Log in"}
         </button>
+        <button type="button" className="button button-secondary" onClick={handleGoogleSignIn} disabled={submitting}>
+          Continue with Google
+        </button>
+        <p className="helper-text">
+          Forgot your password? <Link href="/forgot-password">Reset it</Link>
+        </p>
         <p className="helper-text">
           Need an account? <Link href="/signup">Create one</Link>
         </p>
