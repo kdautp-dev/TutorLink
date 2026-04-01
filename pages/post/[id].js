@@ -3,10 +3,10 @@ import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { doc, onSnapshot } from "firebase/firestore";
 import { useAuth } from "@/components/AuthProvider";
-import { auth, db, isFirebaseConfigured } from "@/lib/firebase";
+import { db, isFirebaseConfigured } from "@/lib/firebase";
 import { POST_STATUSES } from "@/lib/constants";
-import { claimPost, deletePost, markPostCompleted, reportPost, submitReview } from "@/lib/firestore";
-import { clampRating, formatDate } from "@/lib/utils";
+import { claimPost, deletePost, reportPost } from "@/lib/firestore";
+import { formatDate } from "@/lib/utils";
 
 function PostDetailContent() {
   const router = useRouter();
@@ -15,7 +15,6 @@ function PostDetailContent() {
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionError, setActionError] = useState("");
-  const [reviewForm, setReviewForm] = useState({ rating: "5", comment: "" });
   const [reportReason, setReportReason] = useState("");
   const [busyAction, setBusyAction] = useState("");
 
@@ -37,25 +36,13 @@ function PostDetailContent() {
     return (
       authUser &&
       post?.status === POST_STATUSES.OPEN &&
-      post?.creatorId !== authUser.uid
+      post?.creatorId !== authUser.uid &&
+      !(post?.interestedHelperIds || []).includes(authUser.uid)
     );
   }, [authUser, post]);
 
-  const canMarkCompleted =
-    authUser &&
-    post &&
-    post.creatorId === authUser.uid &&
-    post.status !== POST_STATUSES.COMPLETED;
-
   const canDeletePost = authUser && post && post.creatorId === authUser.uid;
-
-  const canReview =
-    authUser &&
-    post &&
-    post.creatorId === authUser.uid &&
-    post.status === POST_STATUSES.COMPLETED &&
-    post.helperId &&
-    !post.reviewSubmitted;
+  const hasOfferedHelp = authUser && (post?.interestedHelperIds || []).includes(authUser.uid);
 
   const canSeeContact =
     post &&
@@ -80,19 +67,6 @@ function PostDetailContent() {
     }
   }
 
-  async function handleComplete() {
-    setBusyAction("complete");
-    setActionError("");
-
-    try {
-      await markPostCompleted(post.id, authUser.uid);
-    } catch (error) {
-      setActionError(error.message || "Unable to complete this post.");
-    } finally {
-      setBusyAction("");
-    }
-  }
-
   async function handleDelete() {
     setBusyAction("delete");
     setActionError("");
@@ -102,36 +76,6 @@ function PostDetailContent() {
       router.push("/assignments");
     } catch (error) {
       setActionError(error.message || "Unable to delete this post.");
-    } finally {
-      setBusyAction("");
-    }
-  }
-
-  async function handleReviewSubmit(event) {
-    event.preventDefault();
-    setActionError("");
-
-    if (!reviewForm.comment.trim()) {
-      setActionError("Review comment is required.");
-      return;
-    }
-
-    setBusyAction("review");
-
-    try {
-      const token = await auth.currentUser.getIdToken();
-
-      await submitReview({
-        postId: post.id,
-        tutorId: post.helperId,
-        rating: clampRating(reviewForm.rating),
-        comment: reviewForm.comment.trim(),
-        token,
-      });
-
-      setReviewForm({ rating: "5", comment: "" });
-    } catch (error) {
-      setActionError(error.message || "Unable to submit review.");
     } finally {
       setBusyAction("");
     }
@@ -221,15 +165,6 @@ function PostDetailContent() {
           </div>
         </div>
 
-        {post.helperId && (
-          <div className="info-box">
-            <strong>Assigned helper</strong>
-            <p>
-              <Link href={`/profile/${post.helperId}`}>{post.helperName || "Helper"}</Link>
-            </p>
-          </div>
-        )}
-
         {canSeeContact && (
           <div className="info-box">
             <strong>Contact info</strong>
@@ -249,14 +184,9 @@ function PostDetailContent() {
             </button>
           )}
 
-          {canMarkCompleted && (
-            <button
-              type="button"
-              className="button"
-              onClick={handleComplete}
-              disabled={busyAction === "complete"}
-            >
-              {busyAction === "complete" ? "Saving..." : "Mark as completed"}
+          {hasOfferedHelp && (
+            <button type="button" className="button button-secondary" disabled>
+              You offered help
             </button>
           )}
 
@@ -272,42 +202,6 @@ function PostDetailContent() {
           )}
         </div>
       </article>
-
-      {canReview && (
-        <form className="card form-card" onSubmit={handleReviewSubmit}>
-          <h2>Leave a review for your helper</h2>
-          <div className="field">
-            <label htmlFor="rating">Rating</label>
-            <select
-              id="rating"
-              value={reviewForm.rating}
-              onChange={(event) =>
-                setReviewForm((current) => ({ ...current, rating: event.target.value }))
-              }
-            >
-              {[5, 4, 3, 2, 1].map((score) => (
-                <option key={score} value={score}>
-                  {score}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="field">
-            <label htmlFor="comment">Comment</label>
-            <textarea
-              id="comment"
-              rows="4"
-              value={reviewForm.comment}
-              onChange={(event) =>
-                setReviewForm((current) => ({ ...current, comment: event.target.value }))
-              }
-            />
-          </div>
-          <button type="submit" className="button" disabled={busyAction === "review"}>
-            {busyAction === "review" ? "Submitting..." : "Submit review"}
-          </button>
-        </form>
-      )}
 
       {authUser && (
         <div className="card form-card">
