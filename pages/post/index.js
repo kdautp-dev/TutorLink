@@ -209,7 +209,7 @@ function PostPageContent() {
       <div>
         <h1>Create a post</h1>
         <p className="helper-text">
-          Switch between assignment ads and tutor ads from one place. Each account can publish up to 10 total ads per day.
+          Switch between assignment ads and helper ads from one place. Each account can publish up to 10 total ads per day.
         </p>
       </div>
 
@@ -235,7 +235,7 @@ function PostPageContent() {
               onChange={(event) => setAdType(event.target.value)}
             >
               <option value={AD_TYPES.ASSIGNMENT}>Student ad</option>
-              <option value={AD_TYPES.TUTOR}>Tutor ad</option>
+              <option value={AD_TYPES.TUTOR}>Helper ad</option>
             </select>
           </div>
 
@@ -320,13 +320,13 @@ function PostPageContent() {
             </>
           ) : (
             <>
-              {loadingExisting && <p className="helper-text">Loading your current tutor ad...</p>}
+              {loadingExisting && <p className="helper-text">Loading your current helper ad...</p>}
               <div className="field">
                 <label htmlFor="tutor-title">Listing title</label>
                 <input
                   id="tutor-title"
                   name="title"
-                  placeholder="Calculus tutor for quizzes and homework"
+                  placeholder="Calculus helper for quizzes and homework"
                   value={tutorForm.title}
                   onChange={handleTutorChange}
                 />
@@ -410,7 +410,7 @@ function PostPageContent() {
                   checked={tutorForm.active}
                   onChange={handleTutorChange}
                 />
-                Keep this listing visible in Tutor Finder
+                Keep this listing visible in Helper Finder
               </label>
             </>
           )}
@@ -425,7 +425,7 @@ function PostPageContent() {
                   : "Saving..."
                 : adType === AD_TYPES.ASSIGNMENT
                   ? "Create assignment ad"
-                  : "Save tutor ad"}
+                  : "Save helper ad"}
             </button>
             {adType === AD_TYPES.TUTOR && hasExistingListing && (
               <button
@@ -434,7 +434,7 @@ function PostPageContent() {
                 onClick={handleDeleteTutorListing}
                 disabled={submitting}
               >
-                {submitting ? "Deleting..." : "Delete tutor ad"}
+                {submitting ? "Deleting..." : "Delete helper ad"}
               </button>
             )}
           </div>

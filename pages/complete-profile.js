@@ -107,7 +107,7 @@ function CompleteProfileContent() {
           <input
             id="gradeLevel"
             name="gradeLevel"
-            placeholder="10th grade, AP Bio, college sophomore"
+            placeholder="11th Grade, College sophmore, etc."
             value={form.gradeLevel}
             onChange={handleChange}
           />
@@ -118,7 +118,7 @@ function CompleteProfileContent() {
             id="subjectsHelping"
             name="subjectsHelping"
             list="complete-profile-help-subjects"
-            placeholder="Calculus, Physics, English"
+            placeholder="Algebra, Physics, None, etc."
             value={form.subjectsHelping}
             onChange={handleChange}
           />
@@ -134,7 +134,7 @@ function CompleteProfileContent() {
             id="subjectsRequesting"
             name="subjectsRequesting"
             list="complete-profile-request-subjects"
-            placeholder="Chemistry, History, Economics"
+            placeholder="Algebra, Phsyics, None, etc"
             value={form.subjectsRequesting}
             onChange={handleChange}
           />
@@ -154,7 +154,7 @@ function CompleteProfileContent() {
             id="qualifications"
             name="qualifications"
             rows="3"
-            placeholder="AP scores, tutoring experience, leadership, awards, coursework"
+            placeholder="AP scores, grades, etc."
             value={form.qualifications}
             onChange={handleChange}
           />

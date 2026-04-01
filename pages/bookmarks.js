@@ -44,9 +44,9 @@ function BookmarksContent() {
       <div className="section-intro">
         <div>
           <p className="eyebrow">Bookmarks</p>
-          <h1>Saved assignments, tutors, and accounts</h1>
+          <h1>Saved assignments, helpers, and accounts</h1>
           <p className="helper-text">
-            Keep track of promising assignments, tutor ads, and accounts you may want to revisit later.
+            Keep track of promising assignments, helper ads, and accounts you may want to revisit later.
           </p>
         </div>
       </div>
@@ -57,7 +57,7 @@ function BookmarksContent() {
           <select id="bookmark-view" value={view} onChange={(event) => setView(event.target.value)}>
             <option value="all">Everything</option>
             <option value="assignment">Assignments</option>
-            <option value="tutor">Tutor ads</option>
+            <option value="tutor">Helper ads</option>
             <option value="profile">Accounts</option>
           </select>
         </div>
@@ -68,8 +68,8 @@ function BookmarksContent() {
             <option value="deadline-soon">Deadline soonest</option>
             <option value="price-high">Highest assignment pay</option>
             <option value="price-low">Lowest assignment pay</option>
-            <option value="rate-high">Highest tutor rate</option>
-            <option value="rate-low">Lowest tutor rate</option>
+            <option value="rate-high">Highest helper rate</option>
+            <option value="rate-low">Lowest helper rate</option>
           </select>
         </div>
       </div>
@@ -112,7 +112,7 @@ function BookmarksContent() {
               <article key={bookmark.id} className="card post-card">
                 <div className="post-card-top">
                   <div>
-                    <span className="status-badge status-open">tutor ad</span>
+                    <span className="status-badge status-open">helper ad</span>
                     <h3>{bookmark.title}</h3>
                     <p className="rating-line">
                       {renderStars(bookmark.rating)} <span>{bookmark.reviewCount || 0} reviews</span>
@@ -126,7 +126,7 @@ function BookmarksContent() {
                   <span>{bookmark.availability || "Availability not listed"}</span>
                 </div>
                 <Link href={`/profile/${bookmark.tutorId}`} className="button">
-                  View tutor
+                  View helper
                 </Link>
               </article>
             );

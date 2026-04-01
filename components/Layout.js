@@ -17,7 +17,7 @@ export default function Layout({ children }) {
           </Link>
           <nav className="nav-links">
             <Link href="/assignments">Assignments</Link>
-            <Link href="/tutors">Tutor Finder</Link>
+            <Link href="/tutors">Helper Finder</Link>
             <Link href="/info">Info</Link>
             <Link href="/post">Post</Link>
             {authUser && (

@@ -148,17 +148,17 @@ export default function TutorsPage() {
     <section className="stack-lg">
       <div className="section-intro">
         <div>
-          <p className="eyebrow">Tutor finder</p>
-          <h1>Discover tutors advertising their expertise</h1>
+          <p className="eyebrow">Helper finder</p>
+          <h1>Discover helpers advertising their expertise</h1>
           <p className="helper-text">
-            Tutors can publish an active listing with subjects, availability, and hourly rate so students can reach out directly.
+            Helpers can publish an active listing with subjects, availability, and hourly rate so students can reach out directly.
           </p>
         </div>
       </div>
 
       <TutorFilters filters={filters} onChange={handleFilterChange} />
 
-      {loading && <p className="helper-text">Loading tutor listings...</p>}
+      {loading && <p className="helper-text">Loading helper listings...</p>}
 
       {!loading && feedError && (
         <div className="card">
@@ -168,7 +168,7 @@ export default function TutorsPage() {
 
       {!loading && !feedError && !filteredListings.length && (
         <div className="card">
-          <p>No tutor listings match your filters yet.</p>
+          <p>No helper listings match your filters yet.</p>
         </div>
       )}
 

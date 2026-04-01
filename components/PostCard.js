@@ -21,10 +21,17 @@ export default function PostCard({ post, isBookmarked = false, onToggleBookmark,
               disabled={bookmarkBusy}
               aria-label={isBookmarked ? "Remove assignment bookmark" : "Save assignment bookmark"}
             >
-              {bookmarkBusy ? "..." : isBookmarked ? "★" : "☆"}
+              <svg viewBox="0 0 24 24" fill="none" className="bookmark-svg" aria-hidden="true">
+                <path
+                  d="M7 4.75h10a1 1 0 0 1 1 1V20l-6-3.5L6 20V5.75a1 1 0 0 1 1-1Z"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </button>
           )}
-          <strong>${Number(post.priceOffered || 0).toFixed(2)}</strong>
+          <strong className="listing-price">${Number(post.priceOffered || 0).toFixed(2)}</strong>
         </div>
       </div>
       <p>{post.description}</p>

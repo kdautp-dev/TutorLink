@@ -27,12 +27,19 @@ export default function TutorCard({
               className={`bookmark-button ${isBookmarked ? "bookmark-button-active" : ""}`}
               onClick={() => onToggleBookmark(listing)}
               disabled={bookmarkBusy}
-              aria-label={isBookmarked ? "Remove tutor bookmark" : "Save tutor bookmark"}
+              aria-label={isBookmarked ? "Remove helper bookmark" : "Save helper bookmark"}
             >
-              {bookmarkBusy ? "..." : isBookmarked ? "★" : "☆"}
+              <svg viewBox="0 0 24 24" fill="none" className="bookmark-svg" aria-hidden="true">
+                <path
+                  d="M7 4.75h10a1 1 0 0 1 1 1V20l-6-3.5L6 20V5.75a1 1 0 0 1 1-1Z"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </button>
           )}
-          <strong>${Number(listing.hourlyRate || 0).toFixed(2)}/hr</strong>
+          <strong className="listing-price">${Number(listing.hourlyRate || 0).toFixed(2)}/hr</strong>
         </div>
       </div>
 

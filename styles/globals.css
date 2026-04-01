@@ -348,6 +348,11 @@ textarea:focus {
   transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
 }
 
+.bookmark-svg {
+  width: 18px;
+  height: 18px;
+}
+
 .bookmark-button:hover {
   background: #e3f4e7;
   transform: translateY(-1px);
@@ -357,6 +362,13 @@ textarea:focus {
   background: linear-gradient(135deg, #cdebd7, #a8d6b8);
   color: #35634a;
   border-color: #8ec8a2;
+}
+
+.listing-price {
+  font-size: 1.45rem;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: #254331;
 }
 
 .button-secondary {
