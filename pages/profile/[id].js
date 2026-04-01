@@ -4,6 +4,7 @@ import { doc, getDoc } from "firebase/firestore";
 import ReviewList from "@/components/ReviewList";
 import { auth, db, isFirebaseConfigured } from "@/lib/firebase";
 import { useAuth } from "@/components/AuthProvider";
+import { SUBJECT_OPTIONS, USER_ROLES } from "@/lib/constants";
 import {
   buildProfileBookmark,
   getBookmarks,
@@ -11,17 +12,27 @@ import {
   getTutorReviews,
   submitProfileRating,
   toggleBookmark,
+  upsertUserProfile,
 } from "@/lib/firestore";
-import { clampRating, getDisplayUsername, renderStars } from "@/lib/utils";
+import { clampRating, getDisplayUsername, parseSubjects, renderStars } from "@/lib/utils";
 
 export default function ProfilePage() {
   const router = useRouter();
   const { id } = router.query;
-  const { authUser } = useAuth();
+  const { authUser, refreshProfile } = useAuth();
   const [profile, setProfile] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [profileRatings, setProfileRatings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    role: USER_ROLES.STUDENT,
+    subjects: "",
+    bio: "",
+  });
+  const [editError, setEditError] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
   const [ratingForm, setRatingForm] = useState({ rating: "5", comment: "" });
   const [ratingError, setRatingError] = useState("");
   const [submittingRating, setSubmittingRating] = useState(false);
@@ -47,6 +58,17 @@ export default function ProfilePage() {
 
     loadBookmarks();
   }, [authUser, profile]);
+
+  useEffect(() => {
+    if (!profile) return;
+
+    setEditForm({
+      name: profile.name || "",
+      role: profile.role || USER_ROLES.STUDENT,
+      subjects: (profile.subjects || []).join(", "),
+      bio: profile.bio || "",
+    });
+  }, [profile]);
 
   useEffect(() => {
     if (!id || !isFirebaseConfigured || !db) {
@@ -111,6 +133,12 @@ export default function ProfilePage() {
   }
 
   const canRateProfile = authUser && authUser.uid !== profile.id && !hasRatedProfile;
+  const isOwnProfile = authUser?.uid === profile.id;
+
+  function handleEditChange(event) {
+    const { name, value } = event.target;
+    setEditForm((current) => ({ ...current, [name]: value }));
+  }
 
   async function handleBookmarkToggle() {
     if (!authUser || !profile) return;
@@ -163,42 +191,146 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleProfileSave(event) {
+    event.preventDefault();
+    setEditError("");
+
+    if (!authUser) {
+      setEditError("You must be logged in to edit your profile.");
+      return;
+    }
+
+    if (!editForm.name.trim()) {
+      setEditError("Name is required.");
+      return;
+    }
+
+    setSavingProfile(true);
+
+    try {
+      await upsertUserProfile(authUser.uid, {
+        name: editForm.name.trim(),
+        email: authUser.email,
+        role: editForm.role,
+        subjects: parseSubjects(editForm.subjects),
+        bio: editForm.bio.trim(),
+      });
+
+      const refreshedProfileSnap = await getDoc(doc(db, "users", profile.id));
+      if (refreshedProfileSnap.exists()) {
+        setProfile({ id: refreshedProfileSnap.id, ...refreshedProfileSnap.data() });
+      }
+      await refreshProfile();
+      setIsEditing(false);
+    } catch (error) {
+      setEditError(error.message || "Unable to save your profile.");
+    } finally {
+      setSavingProfile(false);
+    }
+  }
+
   return (
     <section className="stack-lg">
       <article className="card profile-card">
-        <h1>{profile.name}</h1>
-        <p className="helper-text">{getDisplayUsername(profile)}</p>
-        <div className="profile-stats">
-          <div>
-            <span className="label">Role</span>
-            <p>{profile.role}</p>
-          </div>
-          <div>
-            <span className="label">Average rating</span>
-            <p className="rating-line">
-              {renderStars(profile.rating)} {getDisplayUsername(profile)}{" "}
-              <span>{profile.reviewCount || 0} reviews</span>
-            </p>
-          </div>
-        </div>
-        <div>
-          <span className="label">Subjects</span>
-          <div className="subject-list">
-            {profile.subjects?.length ? (
-              profile.subjects.map((subject) => (
-                <span key={subject} className="subject-pill">
-                  {subject}
-                </span>
-              ))
-            ) : (
-              <p className="helper-text">No subjects listed.</p>
-            )}
-          </div>
-        </div>
-        <div>
-          <span className="label">Bio</span>
-          <p>{profile.bio || "No bio yet."}</p>
-        </div>
+        {!isEditing ? (
+          <>
+            <h1>{profile.name}</h1>
+            <p className="helper-text">{getDisplayUsername(profile)}</p>
+            <div className="profile-stats">
+              <div>
+                <span className="label">Role</span>
+                <p>{profile.role}</p>
+              </div>
+              <div>
+                <span className="label">Average rating</span>
+                <p className="rating-line">
+                  {renderStars(profile.rating)} {getDisplayUsername(profile)}{" "}
+                  <span>{profile.reviewCount || 0} reviews</span>
+                </p>
+              </div>
+            </div>
+            <div>
+              <span className="label">Subjects</span>
+              <div className="subject-list">
+                {profile.subjects?.length ? (
+                  profile.subjects.map((subject) => (
+                    <span key={subject} className="subject-pill">
+                      {subject}
+                    </span>
+                  ))
+                ) : (
+                  <p className="helper-text">No subjects listed.</p>
+                )}
+              </div>
+            </div>
+            <div>
+              <span className="label">Bio</span>
+              <p>{profile.bio || "No bio yet."}</p>
+            </div>
+          </>
+        ) : (
+          <form className="stack" onSubmit={handleProfileSave}>
+            <div className="field">
+              <label htmlFor="edit-name">Name</label>
+              <input id="edit-name" name="name" value={editForm.name} onChange={handleEditChange} />
+            </div>
+            <div className="field">
+              <label htmlFor="edit-role">Role</label>
+              <select id="edit-role" name="role" value={editForm.role} onChange={handleEditChange}>
+                <option value={USER_ROLES.STUDENT}>Student</option>
+                <option value={USER_ROLES.TUTOR}>Tutor</option>
+              </select>
+            </div>
+            <div className="field">
+              <label htmlFor="edit-subjects">Subjects</label>
+              <input
+                id="edit-subjects"
+                name="subjects"
+                list="profile-subject-suggestions"
+                placeholder="Calculus, Physics, English"
+                value={editForm.subjects}
+                onChange={handleEditChange}
+              />
+              <datalist id="profile-subject-suggestions">
+                {SUBJECT_OPTIONS.map((subject) => (
+                  <option key={subject} value={subject} />
+                ))}
+              </datalist>
+            </div>
+            <div className="field">
+              <label htmlFor="edit-bio">Bio</label>
+              <textarea id="edit-bio" name="bio" rows="4" value={editForm.bio} onChange={handleEditChange} />
+            </div>
+            {editError && <p className="error-text">{editError}</p>}
+            <div className="actions-row">
+              <button type="submit" className="button" disabled={savingProfile}>
+                {savingProfile ? "Saving..." : "Save changes"}
+              </button>
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={() => {
+                  setIsEditing(false);
+                  setEditError("");
+                  setEditForm({
+                    name: profile.name || "",
+                    role: profile.role || USER_ROLES.STUDENT,
+                    subjects: (profile.subjects || []).join(", "),
+                    bio: profile.bio || "",
+                  });
+                }}
+                disabled={savingProfile}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+        {isOwnProfile && !isEditing && (
+          <button type="button" className="button" onClick={() => setIsEditing(true)}>
+            Edit profile
+          </button>
+        )}
         {authUser && authUser.uid !== profile.id && (
           <button
             type="button"
