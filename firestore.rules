@@ -62,12 +62,15 @@ service cloud.firestore {
         && request.resource.data.helperId == null
         && request.resource.data.helperName == null
         && request.resource.data.helperEmail == null
+        && request.resource.data.interestedHelperIds is list
+        && request.resource.data.interestedHelperIds.size() == 0
+        && request.resource.data.helperInterestCount == 0
         && request.resource.data.reviewSubmitted == false;
     }
 
     function canUserClaimPost() {
       return isSignedIn()
-        && resource.data.status == 'open'
+        && (resource.data.status == 'open' || resource.data.status == 'in-progress')
         && resource.data.creatorId != request.auth.uid
         && request.resource.data.creatorId == resource.data.creatorId
         && request.resource.data.creatorName == resource.data.creatorName
@@ -80,11 +83,14 @@ service cloud.firestore {
         && request.resource.data.priceOffered == resource.data.priceOffered
         && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.deadline == resource.data.deadline
-        && request.resource.data.status == 'in-progress'
-        && request.resource.data.helperId == request.auth.uid
+        && request.resource.data.status in ['open', 'in-progress']
+        && request.resource.data.helperId is string
         && request.resource.data.helperName is string
         && request.resource.data.helperName.size() > 0
-        && request.resource.data.helperEmail == request.auth.token.email
+        && request.resource.data.helperEmail is string
+        && request.resource.data.interestedHelperIds is list
+        && request.resource.data.helperInterestCount is number
+        && request.resource.data.helperInterestCount >= resource.data.helperInterestCount
         && request.resource.data.completedAt == resource.data.completedAt
         && request.resource.data.reviewSubmitted == resource.data.reviewSubmitted;
     }
@@ -107,6 +113,8 @@ service cloud.firestore {
         && request.resource.data.helperId == resource.data.helperId
         && request.resource.data.helperName == resource.data.helperName
         && request.resource.data.helperEmail == resource.data.helperEmail
+        && request.resource.data.interestedHelperIds == resource.data.interestedHelperIds
+        && request.resource.data.helperInterestCount == resource.data.helperInterestCount
         && request.resource.data.status == 'completed'
         && request.resource.data.reviewSubmitted == resource.data.reviewSubmitted;
     }
@@ -132,7 +140,7 @@ service cloud.firestore {
       allow read: if true;
       allow create: if canCreatePost();
       allow update: if canUserClaimPost() || canCreatorCompletePost();
-      allow delete: if false;
+      allow delete: if isSignedIn() && resource.data.creatorId == request.auth.uid;
     }
 
     match /tutorListings/{listingId} {
@@ -155,7 +163,7 @@ service cloud.firestore {
         && request.resource.data.contactInfo.size() > 0
         && request.resource.data.preferredPaymentMethod is string
         && request.resource.data.active is bool;
-      allow delete: if false;
+      allow delete: if isSignedIn() && request.auth.uid == listingId;
     }
 
     match /reports/{reportId} {

@@ -18,6 +18,11 @@ export default function ProfilePage() {
   const [ratingForm, setRatingForm] = useState({ rating: "5", comment: "" });
   const [ratingError, setRatingError] = useState("");
   const [submittingRating, setSubmittingRating] = useState(false);
+  const hasRatedProfile = useMemo(() => {
+    if (!authUser) return false;
+
+    return profileRatings.some((rating) => rating.raterId === authUser.uid);
+  }, [authUser, profileRatings]);
 
   useEffect(() => {
     if (!id || !isFirebaseConfigured || !db) {
@@ -80,12 +85,6 @@ export default function ProfilePage() {
       </div>
     );
   }
-
-  const hasRatedProfile = useMemo(() => {
-    if (!authUser) return false;
-
-    return profileRatings.some((rating) => rating.raterId === authUser.uid);
-  }, [authUser, profileRatings]);
 
   const canRateProfile = authUser && authUser.uid !== profile.id && !hasRatedProfile;
 

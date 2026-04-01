@@ -1,13 +1,14 @@
 :root {
   color-scheme: light;
-  --background: #f5f7fb;
+  --background: #f7f1e6;
   --surface: #ffffff;
-  --surface-alt: #eef2ff;
-  --border: #d9dfeb;
-  --text: #1f2937;
-  --muted: #5f6b7a;
-  --primary: #0f766e;
-  --primary-dark: #0b5d57;
+  --surface-alt: #eef8ff;
+  --border: #e8d8bf;
+  --text: #2d2418;
+  --muted: #7c6a52;
+  --primary: #f08a24;
+  --primary-dark: #d76f0a;
+  --accent: #56b6e8;
   --danger: #c62828;
   --shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
   --radius: 18px;
@@ -22,7 +23,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: Arial, Helvetica, sans-serif;
-  background: linear-gradient(180deg, #f8fafc 0%, #edf4ff 100%);
+  background: linear-gradient(180deg, #fcf7ef 0%, #f7f0e4 62%, #eef8ff 100%);
   color: var(--text);
 }
 
@@ -55,9 +56,9 @@ body {
   position: sticky;
   top: 0;
   z-index: 10;
-  border-bottom: 1px solid rgba(217, 223, 235, 0.8);
+  border-bottom: 1px solid rgba(232, 216, 191, 0.85);
   backdrop-filter: blur(12px);
-  background: rgba(248, 250, 252, 0.84);
+  background: rgba(252, 247, 239, 0.88);
 }
 
 .config-banner {
@@ -89,7 +90,7 @@ body {
 .hero {
   padding: 32px;
   border-radius: calc(var(--radius) + 6px);
-  background: linear-gradient(135deg, #0f766e, #164e63);
+  background: linear-gradient(135deg, #f08a24, #56b6e8);
   color: white;
   box-shadow: var(--shadow);
 }
@@ -281,13 +282,13 @@ textarea {
 }
 
 .status-in-progress {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: #e0f2ff;
+  color: #0f5f86;
 }
 
 .status-completed {
-  background: #f3e8ff;
-  color: #7c3aed;
+  background: #fff0dd;
+  color: #b85a00;
 }
 
 .subject-list {
@@ -301,7 +302,7 @@ textarea {
 .info-box {
   background: var(--surface-alt);
   border-radius: 12px;
-  border: 1px solid #dbe4ff;
+  border: 1px solid #cdeafb;
 }
 
 .subject-pill {

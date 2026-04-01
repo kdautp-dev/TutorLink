@@ -14,6 +14,7 @@ export default function PostCard({ post }) {
       <p>{post.description}</p>
       <div className="post-meta">
         <span>{post.subject}</span>
+        <span>{post.helperInterestCount || 0} people offered help</span>
         <span>Posted {formatDate(post.createdAt)}</span>
       </div>
       <Link href={`/post/${post.id}`} className="button">

@@ -5,7 +5,7 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { useAuth } from "@/components/AuthProvider";
 import { auth, db, isFirebaseConfigured } from "@/lib/firebase";
 import { POST_STATUSES } from "@/lib/constants";
-import { claimPost, markPostCompleted, reportPost, submitReview } from "@/lib/firestore";
+import { claimPost, deletePost, markPostCompleted, reportPost, submitReview } from "@/lib/firestore";
 import { clampRating, formatDate } from "@/lib/utils";
 
 function PostDetailContent() {
@@ -45,7 +45,9 @@ function PostDetailContent() {
     authUser &&
     post &&
     post.creatorId === authUser.uid &&
-    post.status === POST_STATUSES.IN_PROGRESS;
+    post.status !== POST_STATUSES.COMPLETED;
+
+  const canDeletePost = authUser && post && post.creatorId === authUser.uid;
 
   const canReview =
     authUser &&
@@ -58,14 +60,19 @@ function PostDetailContent() {
   const canSeeContact =
     post &&
     authUser &&
-    (post.creatorId === authUser.uid || post.helperId === authUser.uid);
+    (post.creatorId === authUser.uid ||
+      (post.interestedHelperIds || []).includes(authUser.uid));
 
   async function handleClaim() {
     setBusyAction("claim");
     setActionError("");
 
     try {
-      await claimPost(post.id, profile);
+      await claimPost(post.id, {
+        uid: authUser.uid,
+        name: profile?.name || authUser.email?.split("@")[0] || "Helper",
+        email: profile?.email || authUser.email || "",
+      });
     } catch (error) {
       setActionError(error.message || "Unable to claim this post.");
     } finally {
@@ -81,6 +88,20 @@ function PostDetailContent() {
       await markPostCompleted(post.id, authUser.uid);
     } catch (error) {
       setActionError(error.message || "Unable to complete this post.");
+    } finally {
+      setBusyAction("");
+    }
+  }
+
+  async function handleDelete() {
+    setBusyAction("delete");
+    setActionError("");
+
+    try {
+      await deletePost(post.id, authUser.uid);
+      router.push("/assignments");
+    } catch (error) {
+      setActionError(error.message || "Unable to delete this post.");
     } finally {
       setBusyAction("");
     }
@@ -189,6 +210,10 @@ function PostDetailContent() {
             <p>{post.deadline ? formatDate(post.deadline) : "No deadline"}</p>
           </div>
           <div>
+            <span className="label">Helpers interested</span>
+            <p>{post.helperInterestCount || 0}</p>
+          </div>
+          <div>
             <span className="label">Posted by</span>
             <p>
               <Link href={`/profile/${post.creatorId}`}>{post.creatorName || "User"}</Link>
@@ -220,7 +245,7 @@ function PostDetailContent() {
         <div className="actions-row">
           {canClaim && (
             <button type="button" className="button" onClick={handleClaim} disabled={busyAction === "claim"}>
-              {busyAction === "claim" ? "Claiming..." : "I can help"}
+              {busyAction === "claim" ? "Saving..." : "I can help"}
             </button>
           )}
 
@@ -232,6 +257,17 @@ function PostDetailContent() {
               disabled={busyAction === "complete"}
             >
               {busyAction === "complete" ? "Saving..." : "Mark as completed"}
+            </button>
+          )}
+
+          {canDeletePost && (
+            <button
+              type="button"
+              className="button button-secondary"
+              onClick={handleDelete}
+              disabled={busyAction === "delete"}
+            >
+              {busyAction === "delete" ? "Deleting..." : "Delete post"}
             </button>
           )}
         </div>

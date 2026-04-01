@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/components/AuthProvider";
 import { SUBJECT_OPTIONS } from "@/lib/constants";
-import { getTutorListing, upsertTutorListing } from "@/lib/firestore";
+import { deleteTutorListing, getTutorListing, upsertTutorListing } from "@/lib/firestore";
 import { parseSubjects } from "@/lib/utils";
 
 function CreateTutorListingContent() {
@@ -22,6 +22,7 @@ function CreateTutorListingContent() {
   const [loadingExisting, setLoadingExisting] = useState(true);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [hasExistingListing, setHasExistingListing] = useState(false);
 
   useEffect(() => {
     async function loadExisting() {
@@ -33,6 +34,7 @@ function CreateTutorListingContent() {
       const listing = await getTutorListing(authUser.uid);
 
       if (listing) {
+        setHasExistingListing(true);
         setForm({
           title: listing.title || "",
           bio: listing.bio || "",
@@ -92,6 +94,20 @@ function CreateTutorListingContent() {
       router.push("/tutors");
     } catch (submitError) {
       setError(submitError.message || "Unable to save tutor listing.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleDelete() {
+    setError("");
+    setSubmitting(true);
+
+    try {
+      await deleteTutorListing(authUser.uid);
+      router.push("/tutors");
+    } catch (submitError) {
+      setError(submitError.message || "Unable to delete tutor listing.");
     } finally {
       setSubmitting(false);
     }
@@ -191,9 +207,21 @@ function CreateTutorListingContent() {
             Keep this listing visible in Tutor Finder
           </label>
           {error && <p className="error-text">{error}</p>}
-          <button type="submit" className="button" disabled={submitting}>
-            {submitting ? "Saving..." : "Save tutor listing"}
-          </button>
+          <div className="actions-row">
+            <button type="submit" className="button" disabled={submitting}>
+              {submitting ? "Saving..." : "Save tutor listing"}
+            </button>
+            {hasExistingListing && (
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={handleDelete}
+                disabled={submitting}
+              >
+                Delete listing
+              </button>
+            )}
+          </div>
         </form>
       )}
     </section>

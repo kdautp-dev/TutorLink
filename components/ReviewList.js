@@ -13,7 +13,7 @@ export default function ReviewList({ reviews }) {
             <strong>{review.rating}/5</strong>
             <span>{formatDate(review.createdAt)}</span>
           </div>
-          <p>{review.comment}</p>
+          <p>{review.comment || "No comment provided."}</p>
         </article>
       ))}
     </div>
