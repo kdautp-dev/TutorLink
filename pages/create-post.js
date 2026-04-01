@@ -16,6 +16,8 @@ function CreatePostContent() {
     subject: SUBJECT_OPTIONS[0],
     priceOffered: "",
     deadline: "",
+    contactInfo: "",
+    preferredPaymentMethod: "",
   });
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -29,13 +31,8 @@ function CreatePostContent() {
     event.preventDefault();
     setError("");
 
-    if (profile?.role !== "student") {
-      setError("Only students can create new posts.");
-      return;
-    }
-
-    if (!form.title.trim() || !form.description.trim() || !form.priceOffered) {
-      setError("Title, description, and price are required.");
+    if (!form.title.trim() || !form.description.trim() || !form.priceOffered || !form.contactInfo.trim()) {
+      setError("Title, description, price, and contact info are required.");
       return;
     }
 
@@ -85,16 +82,7 @@ function CreatePostContent() {
         </div>
       )}
 
-      {profile && profile?.role !== "student" && (
-        <div className="card">
-          <h2>Students only</h2>
-          <p className="helper-text">
-            Only student accounts can create assignment requests in this MVP.
-          </p>
-        </div>
-      )}
-
-      {profile?.role === "student" && (
+      {profile && (
         <form className="card form-card" onSubmit={handleSubmit}>
           <div className="field">
             <label htmlFor="title">Title</label>
@@ -139,6 +127,26 @@ function CreatePostContent() {
               name="deadline"
               type="datetime-local"
               value={form.deadline}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="contactInfo">Contact info</label>
+            <input
+              id="contactInfo"
+              name="contactInfo"
+              placeholder="Phone number, Instagram, Discord, or preferred contact"
+              value={form.contactInfo}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="preferredPaymentMethod">Preferred payment method</label>
+            <input
+              id="preferredPaymentMethod"
+              name="preferredPaymentMethod"
+              placeholder="Venmo, Cash App, PayPal, cash"
+              value={form.preferredPaymentMethod}
               onChange={handleChange}
             />
           </div>

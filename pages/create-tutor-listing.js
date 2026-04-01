@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/components/AuthProvider";
-import { SUBJECT_OPTIONS, USER_ROLES } from "@/lib/constants";
+import { SUBJECT_OPTIONS } from "@/lib/constants";
 import { getTutorListing, upsertTutorListing } from "@/lib/firestore";
 import { parseSubjects } from "@/lib/utils";
 
@@ -15,6 +15,8 @@ function CreateTutorListingContent() {
     subjects: "",
     hourlyRate: "",
     availability: "",
+    contactInfo: "",
+    preferredPaymentMethod: "",
     active: true,
   });
   const [loadingExisting, setLoadingExisting] = useState(true);
@@ -23,7 +25,7 @@ function CreateTutorListingContent() {
 
   useEffect(() => {
     async function loadExisting() {
-      if (!authUser || profile?.role !== USER_ROLES.TUTOR) {
+      if (!authUser || !profile) {
         setLoadingExisting(false);
         return;
       }
@@ -37,6 +39,8 @@ function CreateTutorListingContent() {
           subjects: (listing.subjects || []).join(", "),
           hourlyRate: listing.hourlyRate?.toString() || "",
           availability: listing.availability || "",
+          contactInfo: listing.contactInfo || "",
+          preferredPaymentMethod: listing.preferredPaymentMethod || "",
           active: listing.active ?? true,
         });
       }
@@ -45,7 +49,7 @@ function CreateTutorListingContent() {
     }
 
     loadExisting();
-  }, [authUser, profile?.role]);
+  }, [authUser, profile]);
 
   function handleChange(event) {
     const { name, value, type, checked } = event.target;
@@ -59,13 +63,8 @@ function CreateTutorListingContent() {
     event.preventDefault();
     setError("");
 
-    if (profile?.role !== USER_ROLES.TUTOR) {
-      setError("Only tutor accounts can publish tutor listings.");
-      return;
-    }
-
-    if (!form.title.trim() || !form.bio.trim() || !form.hourlyRate) {
-      setError("Title, bio, and hourly rate are required.");
+    if (!form.title.trim() || !form.bio.trim() || !form.hourlyRate || !form.contactInfo.trim()) {
+      setError("Title, bio, hourly rate, and contact info are required.");
       return;
     }
 
@@ -85,6 +84,8 @@ function CreateTutorListingContent() {
         subjects: parseSubjects(form.subjects),
         hourlyRate: form.hourlyRate,
         availability: form.availability.trim(),
+        contactInfo: form.contactInfo.trim(),
+        preferredPaymentMethod: form.preferredPaymentMethod.trim(),
         active: form.active,
       });
 
@@ -105,16 +106,7 @@ function CreateTutorListingContent() {
         </p>
       </div>
 
-      {profile?.role !== USER_ROLES.TUTOR && (
-        <div className="card">
-          <h2>Tutors only</h2>
-          <p className="helper-text">
-            Switch your account role to tutor on your profile before creating a tutor listing.
-          </p>
-        </div>
-      )}
-
-      {profile?.role === USER_ROLES.TUTOR && (
+      {profile && (
         <form className="card form-card" onSubmit={handleSubmit}>
           {loadingExisting && <p className="helper-text">Loading your current listing...</p>}
           <div className="field">
@@ -166,6 +158,26 @@ function CreateTutorListingContent() {
               name="availability"
               placeholder="Weeknights after 6 PM, weekends"
               value={form.availability}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="contactInfo">Contact info</label>
+            <input
+              id="contactInfo"
+              name="contactInfo"
+              placeholder="Phone number, Instagram, Discord, or preferred contact"
+              value={form.contactInfo}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="preferredPaymentMethod">Preferred payment method</label>
+            <input
+              id="preferredPaymentMethod"
+              name="preferredPaymentMethod"
+              placeholder="Venmo, Cash App, PayPal, cash"
+              value={form.preferredPaymentMethod}
               onChange={handleChange}
             />
           </div>

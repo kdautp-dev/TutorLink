@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { doc, onSnapshot } from "firebase/firestore";
 import { useAuth } from "@/components/AuthProvider";
 import { auth, db, isFirebaseConfigured } from "@/lib/firebase";
-import { POST_STATUSES, USER_ROLES } from "@/lib/constants";
+import { POST_STATUSES } from "@/lib/constants";
 import { claimPost, markPostCompleted, reportPost, submitReview } from "@/lib/firestore";
 import { clampRating, formatDate } from "@/lib/utils";
 
@@ -36,11 +36,10 @@ function PostDetailContent() {
   const canClaim = useMemo(() => {
     return (
       authUser &&
-      profile?.role === USER_ROLES.TUTOR &&
       post?.status === POST_STATUSES.OPEN &&
       post?.creatorId !== authUser.uid
     );
-  }, [authUser, post, profile?.role]);
+  }, [authUser, post]);
 
   const canMarkCompleted =
     authUser &&
@@ -190,26 +189,29 @@ function PostDetailContent() {
             <p>{post.deadline ? formatDate(post.deadline) : "No deadline"}</p>
           </div>
           <div>
-            <span className="label">Student</span>
+            <span className="label">Posted by</span>
             <p>
-              <Link href={`/profile/${post.creatorId}`}>{post.creatorName || "Student"}</Link>
+              <Link href={`/profile/${post.creatorId}`}>{post.creatorName || "User"}</Link>
             </p>
           </div>
         </div>
 
         {post.helperId && (
           <div className="info-box">
-            <strong>Assigned tutor</strong>
+            <strong>Assigned helper</strong>
             <p>
-              <Link href={`/profile/${post.helperId}`}>{post.helperName || "Tutor"}</Link>
+              <Link href={`/profile/${post.helperId}`}>{post.helperName || "Helper"}</Link>
             </p>
           </div>
         )}
 
         {canSeeContact && (
           <div className="info-box">
-            <strong>Student contact</strong>
-            <p>{post.creatorEmail}</p>
+            <strong>Contact info</strong>
+            <p>{post.contactInfo || "No contact info provided"}</p>
+            <p className="helper-text">
+              Preferred payment: {post.preferredPaymentMethod || "Not specified"}
+            </p>
           </div>
         )}
 
@@ -237,7 +239,7 @@ function PostDetailContent() {
 
       {canReview && (
         <form className="card form-card" onSubmit={handleReviewSubmit}>
-          <h2>Leave a review for your tutor</h2>
+          <h2>Leave a review for your helper</h2>
           <div className="field">
             <label htmlFor="rating">Rating</label>
             <select

@@ -1,6 +1,4 @@
 import { adminAuth, adminDb, isFirebaseAdminConfigured } from "@/lib/firebaseAdmin";
-import { USER_ROLES } from "@/lib/constants";
-
 function getBearerToken(request) {
   const header = request.headers.authorization || "";
 
@@ -60,14 +58,14 @@ export default async function handler(request, response) {
       }
 
       if (!tutorSnap.exists) {
-        throw new Error("Tutor profile not found.");
+        throw new Error("Helper profile not found.");
       }
 
       const post = postSnap.data();
       const tutor = tutorSnap.data();
 
       if (post.creatorId !== studentId) {
-        throw new Error("Only the student who created the post can leave a review.");
+        throw new Error("Only the person who created the post can leave a review.");
       }
 
       if (post.status !== "completed") {
@@ -79,11 +77,7 @@ export default async function handler(request, response) {
       }
 
       if (post.helperId !== tutorId) {
-        throw new Error("This tutor is not assigned to the post.");
-      }
-
-      if (tutor.role !== USER_ROLES.TUTOR) {
-        throw new Error("Reviews can only be left for tutors.");
+        throw new Error("This helper is not assigned to the post.");
       }
 
       const reviewCount = tutor.reviewCount || 0;

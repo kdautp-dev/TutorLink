@@ -25,7 +25,8 @@ export default function TutorCard({ listing }) {
 
       <div className="post-meta">
         <span>{listing.availability || "Availability not listed"}</span>
-        <span>{listing.email}</span>
+        <span>{listing.contactInfo || "Contact not listed"}</span>
+        <span>{listing.preferredPaymentMethod || "Payment method not listed"}</span>
       </div>
 
       <Link href={`/profile/${listing.tutorId}`} className="button">

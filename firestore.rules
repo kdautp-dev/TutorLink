@@ -46,7 +46,6 @@ service cloud.firestore {
 
     function canCreatePost() {
       return isSignedIn()
-        && currentUserRole() == 'student'
         && request.resource.data.creatorId == request.auth.uid
         && request.resource.data.creatorEmail == request.auth.token.email
         && request.resource.data.title is string
@@ -54,6 +53,9 @@ service cloud.firestore {
         && request.resource.data.description is string
         && request.resource.data.description.size() > 0
         && request.resource.data.subject is string
+        && request.resource.data.contactInfo is string
+        && request.resource.data.contactInfo.size() > 0
+        && request.resource.data.preferredPaymentMethod is string
         && request.resource.data.status == 'open'
         && request.resource.data.priceOffered is number
         && request.resource.data.priceOffered > 0
@@ -63,14 +65,15 @@ service cloud.firestore {
         && request.resource.data.reviewSubmitted == false;
     }
 
-    function canTutorClaimPost() {
+    function canUserClaimPost() {
       return isSignedIn()
-        && currentUserRole() == 'tutor'
         && resource.data.status == 'open'
         && resource.data.creatorId != request.auth.uid
         && request.resource.data.creatorId == resource.data.creatorId
         && request.resource.data.creatorName == resource.data.creatorName
         && request.resource.data.creatorEmail == resource.data.creatorEmail
+        && request.resource.data.contactInfo == resource.data.contactInfo
+        && request.resource.data.preferredPaymentMethod == resource.data.preferredPaymentMethod
         && request.resource.data.title == resource.data.title
         && request.resource.data.description == resource.data.description
         && request.resource.data.subject == resource.data.subject
@@ -93,6 +96,8 @@ service cloud.firestore {
         && request.resource.data.creatorId == resource.data.creatorId
         && request.resource.data.creatorName == resource.data.creatorName
         && request.resource.data.creatorEmail == resource.data.creatorEmail
+        && request.resource.data.contactInfo == resource.data.contactInfo
+        && request.resource.data.preferredPaymentMethod == resource.data.preferredPaymentMethod
         && request.resource.data.title == resource.data.title
         && request.resource.data.description == resource.data.description
         && request.resource.data.subject == resource.data.subject
@@ -118,10 +123,15 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    match /users/{userId}/profileRatings/{ratingId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     match /posts/{postId} {
       allow read: if true;
       allow create: if canCreatePost();
-      allow update: if canTutorClaimPost() || canCreatorCompletePost();
+      allow update: if canUserClaimPost() || canCreatorCompletePost();
       allow delete: if false;
     }
 
@@ -129,7 +139,6 @@ service cloud.firestore {
       allow read: if true;
       allow create, update: if isSignedIn()
         && request.auth.uid == listingId
-        && currentUserRole() == 'tutor'
         && request.resource.data.tutorId == request.auth.uid
         && request.resource.data.email == request.auth.token.email
         && request.resource.data.name is string
@@ -142,6 +151,9 @@ service cloud.firestore {
         && request.resource.data.hourlyRate is number
         && request.resource.data.hourlyRate > 0
         && request.resource.data.availability is string
+        && request.resource.data.contactInfo is string
+        && request.resource.data.contactInfo.size() > 0
+        && request.resource.data.preferredPaymentMethod is string
         && request.resource.data.active is bool;
       allow delete: if false;
     }
