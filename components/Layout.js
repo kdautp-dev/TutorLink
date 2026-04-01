@@ -19,7 +19,10 @@ export default function Layout({ children }) {
       <header className="site-header">
         <div className="container nav-bar">
           <Link href="/" className="brand">
-            Homework4Cash
+            <span className="brand-mark" aria-hidden="true">
+              ★
+            </span>
+            <span>Homework4Cash</span>
           </Link>
           <nav className="nav-links">
             <Link href="/">Home</Link>
