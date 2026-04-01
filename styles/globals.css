@@ -125,6 +125,27 @@ body {
   gap: 28px;
 }
 
+.choice-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.choice-card {
+  display: grid;
+  gap: 14px;
+  color: inherit;
+}
+
+.choice-card h2 {
+  margin: 0;
+}
+
+.section-intro {
+  display: grid;
+  gap: 8px;
+}
+
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -198,6 +219,9 @@ textarea {
 
 .button {
   width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 0;
   border-radius: 999px;
   padding: 12px 18px;
@@ -290,6 +314,17 @@ textarea {
 
 .helper-text {
   color: var(--muted);
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+}
+
+.checkbox-row input {
+  width: auto;
 }
 
 .error-text {

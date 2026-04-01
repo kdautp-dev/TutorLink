@@ -23,7 +23,10 @@ export default function Layout({ children }) {
           </Link>
           <nav className="nav-links">
             <Link href="/">Home</Link>
-            {authUser && <Link href="/create-post">Create Post</Link>}
+            <Link href="/assignments">Assignments</Link>
+            <Link href="/tutors">Tutor Finder</Link>
+            {authUser && <Link href="/create-post">Post Assignment</Link>}
+            {authUser && <Link href="/create-tutor-listing">Become a Tutor</Link>}
             {authUser && profile && <Link href={`/profile/${profile.uid}`}>Profile</Link>}
             {authUser && !profile && <Link href="/complete-profile">Complete Profile</Link>}
             {!authUser && <Link href="/login">Log In</Link>}

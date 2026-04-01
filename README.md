@@ -12,18 +12,26 @@ TutorLink/
 │   ├── PostCard.js
 │   ├── PostFilters.js
 │   ├── ProtectedRoute.js
-│   └── ReviewList.js
+│   ├── ReviewList.js
+│   ├── TutorCard.js
+│   └── TutorFilters.js
 ├── lib/
 │   ├── constants.js
+│   ├── firebaseAdmin.js
 │   ├── firebase.js
 │   ├── firestore.js
 │   └── utils.js
 ├── pages/
 │   ├── _app.js
+│   ├── assignments.js
 │   ├── create-post.js
-│   ├── index.js
-│   ├── login.js
-│   ├── signup.js
+│   ├── create-tutor-listing.js
+ │   ├── index.js
+ │   ├── login.js
+ │   ├── signup.js
+│   ├── tutors.js
+│   ├── api/
+│   │   └── reviews.js
 │   ├── post/
 │   │   └── [id].js
 │   └── profile/
@@ -43,7 +51,8 @@ TutorLink/
 - Email/password sign up and login with Firebase Auth
 - Firestore user profiles with role, subjects, bio, rating, and review count
 - Student post creation with validation
-- Homepage feed of open requests with subject and price filtering
+- Dedicated assignments marketplace with subject and price filtering
+- Tutor finder directory with tutor-created listings
 - Tutor claim flow that marks posts as `in-progress`
 - Post completion flow controlled by the post creator
 - Tutor profile pages with average rating and reviews
@@ -60,10 +69,17 @@ TutorLink/
 4. Create a Firestore database in production or test mode.
 5. Copy `.env.local.example` to `.env.local`.
 6. Fill in your Firebase web app config values in `.env.local`.
-7. Optional but recommended: deploy the included Firestore rules.
+7. Create a Firebase service account for secure server-side review writes:
+   - Firebase Console > Project settings > Service accounts
+   - Generate a new private key
+   - Add these values to `.env.local` for local use and to Vercel for production:
+     - `FIREBASE_ADMIN_PROJECT_ID`
+     - `FIREBASE_ADMIN_CLIENT_EMAIL`
+     - `FIREBASE_ADMIN_PRIVATE_KEY`
+8. Deploy the included Firestore rules and indexes.
 
 ```bash
-firebase deploy --only firestore:rules
+npx firebase-tools deploy --only firestore:rules,firestore:indexes
 ```
 
 ## Running Locally
@@ -79,7 +95,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 1. Push this project to GitHub.
 2. Import the repo into Vercel.
-3. Add the same `NEXT_PUBLIC_FIREBASE_*` environment variables in Vercel Project Settings.
+3. Add both the `NEXT_PUBLIC_FIREBASE_*` variables and the `FIREBASE_ADMIN_*` variables in Vercel Project Settings.
 4. Deploy.
 
 Vercel will detect Next.js automatically.
@@ -87,5 +103,5 @@ Vercel will detect Next.js automatically.
 ## Notes
 
 - Reviews are stored in a Firestore subcollection at `users/{tutorId}/reviews`.
-- Tutor rating and review count are updated when a student submits a review.
-- The included Firestore rules are permissive enough for this MVP. For production, move sensitive aggregate updates into Cloud Functions or a trusted backend.
+- Tutor rating and review count are updated server-side through a Next.js API route using Firebase Admin.
+- Firestore rules now restrict profile edits, post creation, claim/completion actions, and block client-side review writes.

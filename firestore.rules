@@ -1,18 +1,158 @@
-rules_version='2'
+rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      // This rule allows anyone with your database reference to view, edit,
-      // and delete all data in your database. It is useful for getting
-      // started, but it is configured to expire after 30 days because it
-      // leaves your app open to attackers. At that time, all client
-      // requests to your database will be denied.
-      //
-      // Make sure to write security rules for your app before that time, or
-      // else all client requests to your database will be denied until you
-      // update your rules.
-      allow read, write: if request.time < timestamp.date(2026, 4, 30);
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function userDoc(userId) {
+      return get(/databases/$(database)/documents/users/$(userId));
+    }
+
+    function currentUserRole() {
+      return userDoc(request.auth.uid).data.role;
+    }
+
+    function userProfileBaseFieldsValid() {
+      return request.resource.data.uid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.role in ['student', 'tutor']
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.subjects is list
+        && request.resource.data.bio is string;
+    }
+
+    function canCreateUserProfile(userId) {
+      return isOwner(userId)
+        && userProfileBaseFieldsValid()
+        && request.resource.data.rating == 0
+        && request.resource.data.reviewCount == 0;
+    }
+
+    function canUpdateOwnProfile(userId) {
+      return isOwner(userId)
+        && userProfileBaseFieldsValid()
+        && request.resource.data.rating == resource.data.rating
+        && request.resource.data.reviewCount == resource.data.reviewCount
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.uid == resource.data.uid;
+    }
+
+    function canCreatePost() {
+      return isSignedIn()
+        && currentUserRole() == 'student'
+        && request.resource.data.creatorId == request.auth.uid
+        && request.resource.data.creatorEmail == request.auth.token.email
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.description is string
+        && request.resource.data.description.size() > 0
+        && request.resource.data.subject is string
+        && request.resource.data.status == 'open'
+        && request.resource.data.priceOffered is number
+        && request.resource.data.priceOffered > 0
+        && request.resource.data.helperId == null
+        && request.resource.data.helperName == null
+        && request.resource.data.helperEmail == null
+        && request.resource.data.reviewSubmitted == false;
+    }
+
+    function canTutorClaimPost() {
+      return isSignedIn()
+        && currentUserRole() == 'tutor'
+        && resource.data.status == 'open'
+        && resource.data.creatorId != request.auth.uid
+        && request.resource.data.creatorId == resource.data.creatorId
+        && request.resource.data.creatorName == resource.data.creatorName
+        && request.resource.data.creatorEmail == resource.data.creatorEmail
+        && request.resource.data.title == resource.data.title
+        && request.resource.data.description == resource.data.description
+        && request.resource.data.subject == resource.data.subject
+        && request.resource.data.priceOffered == resource.data.priceOffered
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.deadline == resource.data.deadline
+        && request.resource.data.status == 'in-progress'
+        && request.resource.data.helperId == request.auth.uid
+        && request.resource.data.helperName is string
+        && request.resource.data.helperName.size() > 0
+        && request.resource.data.helperEmail == request.auth.token.email
+        && request.resource.data.completedAt == resource.data.completedAt
+        && request.resource.data.reviewSubmitted == resource.data.reviewSubmitted;
+    }
+
+    function canCreatorCompletePost() {
+      return isSignedIn()
+        && resource.data.creatorId == request.auth.uid
+        && resource.data.status == 'in-progress'
+        && request.resource.data.creatorId == resource.data.creatorId
+        && request.resource.data.creatorName == resource.data.creatorName
+        && request.resource.data.creatorEmail == resource.data.creatorEmail
+        && request.resource.data.title == resource.data.title
+        && request.resource.data.description == resource.data.description
+        && request.resource.data.subject == resource.data.subject
+        && request.resource.data.priceOffered == resource.data.priceOffered
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.deadline == resource.data.deadline
+        && request.resource.data.helperId == resource.data.helperId
+        && request.resource.data.helperName == resource.data.helperName
+        && request.resource.data.helperEmail == resource.data.helperEmail
+        && request.resource.data.status == 'completed'
+        && request.resource.data.reviewSubmitted == resource.data.reviewSubmitted;
+    }
+
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if canCreateUserProfile(userId);
+      allow update: if canUpdateOwnProfile(userId);
+      allow delete: if false;
+    }
+
+    match /users/{userId}/reviews/{reviewId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if canCreatePost();
+      allow update: if canTutorClaimPost() || canCreatorCompletePost();
+      allow delete: if false;
+    }
+
+    match /tutorListings/{listingId} {
+      allow read: if true;
+      allow create, update: if isSignedIn()
+        && request.auth.uid == listingId
+        && currentUserRole() == 'tutor'
+        && request.resource.data.tutorId == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.bio is string
+        && request.resource.data.bio.size() > 0
+        && request.resource.data.subjects is list
+        && request.resource.data.hourlyRate is number
+        && request.resource.data.hourlyRate > 0
+        && request.resource.data.availability is string
+        && request.resource.data.active is bool;
+      allow delete: if false;
+    }
+
+    match /reports/{reportId} {
+      allow create: if isSignedIn()
+        && request.resource.data.reporterId == request.auth.uid
+        && request.resource.data.reason is string
+        && request.resource.data.reason.size() > 0
+        && request.resource.data.postId is string;
+      allow read, update, delete: if false;
     }
   }
 }

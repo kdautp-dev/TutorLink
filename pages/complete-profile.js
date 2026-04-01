@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/components/AuthProvider";
 import { SUBJECT_OPTIONS, USER_ROLES } from "@/lib/constants";
-import { upsertUserProfile } from "@/lib/firestore";
+import { createUserProfile, upsertUserProfile } from "@/lib/firestore";
 import { parseSubjects } from "@/lib/utils";
 
 function CompleteProfileContent() {
@@ -59,13 +59,19 @@ function CompleteProfileContent() {
     setSubmitting(true);
 
     try {
-      await upsertUserProfile(authUser.uid, {
+      const profilePayload = {
         name: form.name.trim(),
         email: authUser.email,
         role: form.role,
         subjects: parseSubjects(form.subjects),
         bio: form.bio.trim(),
-      });
+      };
+
+      if (profile) {
+        await upsertUserProfile(authUser.uid, profilePayload);
+      } else {
+        await createUserProfile(authUser.uid, profilePayload);
+      }
 
       await refreshProfile();
       router.push(form.role === USER_ROLES.STUDENT ? "/create-post" : "/");

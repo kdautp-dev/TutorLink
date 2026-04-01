@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { doc, onSnapshot } from "firebase/firestore";
 import { useAuth } from "@/components/AuthProvider";
-import { db, isFirebaseConfigured } from "@/lib/firebase";
+import { auth, db, isFirebaseConfigured } from "@/lib/firebase";
 import { POST_STATUSES, USER_ROLES } from "@/lib/constants";
 import { claimPost, markPostCompleted, reportPost, submitReview } from "@/lib/firestore";
 import { clampRating, formatDate } from "@/lib/utils";
@@ -99,12 +99,14 @@ function PostDetailContent() {
     setBusyAction("review");
 
     try {
+      const token = await auth.currentUser.getIdToken();
+
       await submitReview({
         postId: post.id,
         tutorId: post.helperId,
-        studentId: authUser.uid,
         rating: clampRating(reviewForm.rating),
         comment: reviewForm.comment.trim(),
+        token,
       });
 
       setReviewForm({ rating: "5", comment: "" });
