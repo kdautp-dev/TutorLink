@@ -8,6 +8,7 @@ import { POST_STATUSES } from "@/lib/constants";
 export default function HomePage() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [feedError, setFeedError] = useState("");
   const [filters, setFilters] = useState({
     subject: "",
     maxPrice: "",
@@ -26,15 +27,26 @@ export default function HomePage() {
       orderBy("createdAt", "desc")
     );
 
-    const unsubscribe = onSnapshot(postsQuery, (snapshot) => {
-      const nextPosts = snapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...docSnap.data(),
-      }));
+    const unsubscribe = onSnapshot(
+      postsQuery,
+      (snapshot) => {
+        const nextPosts = snapshot.docs.map((docSnap) => ({
+          id: docSnap.id,
+          ...docSnap.data(),
+        }));
 
-      setPosts(nextPosts);
-      setLoading(false);
-    });
+        setFeedError("");
+        setPosts(nextPosts);
+        setLoading(false);
+      },
+      (error) => {
+        setFeedError(
+          error.message ||
+            "Unable to load posts. Firestore may need an index or updated rules."
+        );
+        setLoading(false);
+      }
+    );
 
     return unsubscribe;
   }, []);
@@ -89,7 +101,13 @@ export default function HomePage() {
 
       {loading && <p className="helper-text">Loading open posts...</p>}
 
-      {!loading && !filteredPosts.length && (
+      {!loading && feedError && (
+        <div className="card">
+          <p className="error-text">{feedError}</p>
+        </div>
+      )}
+
+      {!loading && !feedError && !filteredPosts.length && (
         <div className="card">
           <p>No open posts match your filters yet.</p>
         </div>
