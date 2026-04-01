@@ -1,0 +1,29 @@
+{
+  "name": "homeworkswap",
+  "version": "1.0.0",
+  "description": "TutorLink MVP built with Next.js and Firebase",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint ."
+  },
+  "keywords": [
+    "nextjs",
+    "firebase",
+    "tutoring"
+  ],
+  "license": "ISC",
+  "dependencies": {
+    "@dataconnect/generated": "file:src/dataconnect-generated",
+    "firebase": "^12.11.0",
+    "next": "^16.2.2",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.2"
+  }
+}
