@@ -65,6 +65,16 @@ body {
   padding: 32px 0 64px;
 }
 
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-content {
+  flex: 1;
+}
+
 .site-header {
   position: sticky;
   top: 0;
@@ -78,6 +88,18 @@ body {
   padding: 0 0 14px;
   color: #567445;
   font-size: 0.92rem;
+}
+
+.site-footer {
+  border-top: 1px solid rgba(205, 193, 172, 0.72);
+  background: rgba(248, 241, 230, 0.95);
+}
+
+.footer-bar {
+  padding: 16px 0 22px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  text-align: center;
 }
 
 .nav-bar {

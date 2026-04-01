@@ -25,13 +25,13 @@ export default function InfoPage() {
         <article className="card stack">
           <h2>Contact Us</h2>
           <p>
-            Placeholder company email: <strong>homework4cash@gmail.com</strong>
+            Company email: <strong>homework4cash@gmail.com</strong>
           </p>
           <p>
-            Placeholder phone line: <strong>(346)-332-4992</strong>
+            Phone line: <strong>(346)-332-4992</strong>
           </p>
           <p>
-            Placeholder office hours: We usually respond between 6 AM and 11 PM CST.
+            Office hours: We usually respond between 6 AM and 11 PM CST.
           </p>
         </article>
 

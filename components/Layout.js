@@ -56,6 +56,9 @@ export default function Layout({ children }) {
         )}
       </header>
       <main className="container page-content">{children}</main>
+      <footer className="site-footer">
+        <div className="container footer-bar">Homework4Cash 2026</div>
+      </footer>
     </div>
   );
 }
