@@ -3,10 +3,10 @@ export default function InfoPage() {
     <section className="stack-lg">
       <div className="hero">
         <div>
-          <p className="eyebrow">About TutorLink</p>
-          <h1>How TutorLink works and how to reach us.</h1>
+          <p className="eyebrow">About Homework4Cash</p>
+          <h1>How Homework4Cash works and how to reach us.</h1>
           <p className="hero-copy">
-            TutorLink is a student-focused marketplace where people can post assignment help requests, advertise tutoring expertise, and connect directly.
+            Homework4Cash is a student-focused marketplace where people can post assignment help requests, advertise tutoring expertise, and connect directly.
           </p>
         </div>
       </div>
@@ -26,7 +26,7 @@ export default function InfoPage() {
         <article className="card stack">
           <h2>Contact Us</h2>
           <p>
-            Placeholder company email: <strong>support@tutorlink.example</strong>
+            Placeholder company email: <strong>support@homework4cash.example</strong>
           </p>
           <p>
             Placeholder phone line: <strong>(555) 123-4567</strong>

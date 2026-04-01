@@ -2,18 +2,42 @@ import { useEffect, useMemo, useState } from "react";
 import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
 import TutorCard from "@/components/TutorCard";
 import TutorFilters from "@/components/TutorFilters";
+import { useAuth } from "@/components/AuthProvider";
 import { db, isFirebaseConfigured } from "@/lib/firebase";
-import { getUserProfile } from "@/lib/firestore";
+import {
+  buildTutorBookmark,
+  getBookmarks,
+  getUserProfile,
+  toggleBookmark,
+} from "@/lib/firestore";
+import { getBookmarkId } from "@/lib/utils";
 
 export default function TutorsPage() {
+  const { authUser } = useAuth();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [feedError, setFeedError] = useState("");
+  const [savedIds, setSavedIds] = useState(new Set());
+  const [bookmarkBusyId, setBookmarkBusyId] = useState("");
   const [filters, setFilters] = useState({
     subject: "",
     maxRate: "",
     sort: "newest",
   });
+
+  useEffect(() => {
+    async function loadBookmarks() {
+      if (!authUser) {
+        setSavedIds(new Set());
+        return;
+      }
+
+      const bookmarks = await getBookmarks(authUser.uid);
+      setSavedIds(new Set(bookmarks.map((bookmark) => bookmark.id)));
+    }
+
+    loadBookmarks().catch(() => setSavedIds(new Set()));
+  }, [authUser]);
 
   useEffect(() => {
     if (!isFirebaseConfigured || !db) {
@@ -94,6 +118,32 @@ export default function TutorsPage() {
     }));
   }
 
+  async function handleToggleBookmark(listing) {
+    if (!authUser) return;
+
+    const bookmarkId = getBookmarkId("tutor", listing.tutorId);
+    setBookmarkBusyId(bookmarkId);
+
+    try {
+      const nextState = await toggleBookmark({
+        ownerId: authUser.uid,
+        bookmark: buildTutorBookmark(listing),
+      });
+
+      setSavedIds((current) => {
+        const next = new Set(current);
+        if (nextState) {
+          next.add(bookmarkId);
+        } else {
+          next.delete(bookmarkId);
+        }
+        return next;
+      });
+    } finally {
+      setBookmarkBusyId("");
+    }
+  }
+
   return (
     <section className="stack-lg">
       <div className="section-intro">
@@ -124,7 +174,13 @@ export default function TutorsPage() {
 
       <div className="post-grid">
         {filteredListings.map((listing) => (
-          <TutorCard key={listing.id} listing={listing} />
+          <TutorCard
+            key={listing.id}
+            listing={listing}
+            isBookmarked={savedIds.has(getBookmarkId("tutor", listing.tutorId))}
+            onToggleBookmark={authUser ? handleToggleBookmark : undefined}
+            bookmarkBusy={bookmarkBusyId === getBookmarkId("tutor", listing.tutorId)}
+          />
         ))}
       </div>
     </section>

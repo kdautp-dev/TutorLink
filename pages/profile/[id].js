@@ -5,6 +5,7 @@ import ReviewList from "@/components/ReviewList";
 import { auth, db, isFirebaseConfigured } from "@/lib/firebase";
 import { useAuth } from "@/components/AuthProvider";
 import {
+  buildProfileBookmark,
   getBookmarks,
   getProfileRatings,
   getTutorReviews,
@@ -38,7 +39,7 @@ export default function ProfilePage() {
 
       try {
         const bookmarks = await getBookmarks(authUser.uid);
-        setIsBookmarked(bookmarks.some((bookmark) => bookmark.profileId === profile.id));
+        setIsBookmarked(bookmarks.some((bookmark) => bookmark.id === `profile_${profile.id}`));
       } catch {
         setIsBookmarked(false);
       }
@@ -117,7 +118,10 @@ export default function ProfilePage() {
     setBookmarkBusy(true);
 
     try {
-      const nextState = await toggleBookmark({ ownerId: authUser.uid, profile });
+      const nextState = await toggleBookmark({
+        ownerId: authUser.uid,
+        bookmark: buildProfileBookmark(profile),
+      });
       setIsBookmarked(nextState);
     } finally {
       setBookmarkBusy(false);

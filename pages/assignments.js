@@ -2,19 +2,43 @@ import { useEffect, useMemo, useState } from "react";
 import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
 import PostCard from "@/components/PostCard";
 import PostFilters from "@/components/PostFilters";
+import { useAuth } from "@/components/AuthProvider";
 import { db, isFirebaseConfigured } from "@/lib/firebase";
 import { POST_STATUSES } from "@/lib/constants";
-import { getUserProfile } from "@/lib/firestore";
+import {
+  buildAssignmentBookmark,
+  getBookmarks,
+  getUserProfile,
+  toggleBookmark,
+} from "@/lib/firestore";
+import { getBookmarkId } from "@/lib/utils";
 
 export default function AssignmentsPage() {
+  const { authUser } = useAuth();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [feedError, setFeedError] = useState("");
+  const [savedIds, setSavedIds] = useState(new Set());
+  const [bookmarkBusyId, setBookmarkBusyId] = useState("");
   const [filters, setFilters] = useState({
     subject: "",
     maxPrice: "",
     sort: "newest",
   });
+
+  useEffect(() => {
+    async function loadBookmarks() {
+      if (!authUser) {
+        setSavedIds(new Set());
+        return;
+      }
+
+      const bookmarks = await getBookmarks(authUser.uid);
+      setSavedIds(new Set(bookmarks.map((bookmark) => bookmark.id)));
+    }
+
+    loadBookmarks().catch(() => setSavedIds(new Set()));
+  }, [authUser]);
 
   useEffect(() => {
     if (!isFirebaseConfigured || !db) {
@@ -93,6 +117,32 @@ export default function AssignmentsPage() {
     }));
   }
 
+  async function handleToggleBookmark(post) {
+    if (!authUser) return;
+
+    const bookmarkId = getBookmarkId("assignment", post.id);
+    setBookmarkBusyId(bookmarkId);
+
+    try {
+      const nextState = await toggleBookmark({
+        ownerId: authUser.uid,
+        bookmark: buildAssignmentBookmark(post),
+      });
+
+      setSavedIds((current) => {
+        const next = new Set(current);
+        if (nextState) {
+          next.add(bookmarkId);
+        } else {
+          next.delete(bookmarkId);
+        }
+        return next;
+      });
+    } finally {
+      setBookmarkBusyId("");
+    }
+  }
+
   return (
     <section className="stack-lg">
       <div className="section-intro">
@@ -129,7 +179,13 @@ export default function AssignmentsPage() {
 
       <div className="post-grid">
         {filteredPosts.map((post) => (
-          <PostCard key={post.id} post={post} />
+          <PostCard
+            key={post.id}
+            post={post}
+            isBookmarked={savedIds.has(getBookmarkId("assignment", post.id))}
+            onToggleBookmark={authUser ? handleToggleBookmark : undefined}
+            bookmarkBusy={bookmarkBusyId === getBookmarkId("assignment", post.id)}
+          />
         ))}
       </div>
     </section>

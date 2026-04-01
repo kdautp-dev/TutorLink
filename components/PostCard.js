@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { formatDate, getDisplayUsername, renderStars } from "@/lib/utils";
 
-export default function PostCard({ post }) {
+export default function PostCard({ post, isBookmarked = false, onToggleBookmark, bookmarkBusy = false }) {
   return (
     <article className="card post-card">
       <div className="post-card-top">
@@ -12,12 +12,27 @@ export default function PostCard({ post }) {
             <span>{post.creatorReviewCount || 0} reviews</span>
           </p>
         </div>
-        <strong>${Number(post.priceOffered || 0).toFixed(2)}</strong>
+        <div className="card-corner-actions">
+          {onToggleBookmark && (
+            <button
+              type="button"
+              className={`bookmark-button ${isBookmarked ? "bookmark-button-active" : ""}`}
+              onClick={() => onToggleBookmark(post)}
+              disabled={bookmarkBusy}
+              aria-label={isBookmarked ? "Remove assignment bookmark" : "Save assignment bookmark"}
+            >
+              {bookmarkBusy ? "..." : isBookmarked ? "★" : "☆"}
+            </button>
+          )}
+          <strong>${Number(post.priceOffered || 0).toFixed(2)}</strong>
+        </div>
       </div>
       <p>{post.description}</p>
       <div className="post-meta">
         <span>{post.subject}</span>
+        <span>{post.gradeLevel || "Any grade level"}</span>
         <span>{post.helperInterestCount || 0} people offered help</span>
+        <span>{post.deadline ? `Due ${formatDate(post.deadline)}` : "No deadline"}</span>
         <span>Posted {formatDate(post.createdAt)}</span>
       </div>
       <Link href={`/post/${post.id}`} className="button">

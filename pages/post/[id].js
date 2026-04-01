@@ -130,6 +130,10 @@ function PostDetailContent() {
             <p>{post.subject}</p>
           </div>
           <div>
+            <span className="label">Grade level</span>
+            <p>{post.gradeLevel || "Any grade level"}</p>
+          </div>
+          <div>
             <span className="label">Posted</span>
             <p>{formatDate(post.createdAt)}</p>
           </div>

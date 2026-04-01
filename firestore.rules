@@ -53,6 +53,7 @@ service cloud.firestore {
         && request.resource.data.description is string
         && request.resource.data.description.size() > 0
         && request.resource.data.subject is string
+        && request.resource.data.gradeLevel is string
         && request.resource.data.contactInfo is string
         && request.resource.data.contactInfo.size() > 0
         && request.resource.data.preferredPaymentMethod is string
@@ -80,6 +81,7 @@ service cloud.firestore {
         && request.resource.data.title == resource.data.title
         && request.resource.data.description == resource.data.description
         && request.resource.data.subject == resource.data.subject
+        && request.resource.data.gradeLevel == resource.data.gradeLevel
         && request.resource.data.priceOffered == resource.data.priceOffered
         && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.deadline == resource.data.deadline
@@ -136,6 +138,7 @@ service cloud.firestore {
         && request.resource.data.bio is string
         && request.resource.data.bio.size() > 0
         && request.resource.data.subjects is list
+        && request.resource.data.gradeLevel is string
         && request.resource.data.hourlyRate is number
         && request.resource.data.hourlyRate > 0
         && request.resource.data.availability is string

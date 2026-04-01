@@ -19,15 +19,14 @@ export default function Layout({ children }) {
       <header className="site-header">
         <div className="container nav-bar">
           <Link href="/" className="brand">
-            TutorLink
+            Homework4Cash
           </Link>
           <nav className="nav-links">
             <Link href="/">Home</Link>
             <Link href="/assignments">Assignments</Link>
             <Link href="/tutors">Tutor Finder</Link>
             <Link href="/info">Info</Link>
-            {authUser && <Link href="/create-post">Post Assignment</Link>}
-            {authUser && <Link href="/create-tutor-listing">Become a Tutor</Link>}
+            {authUser && <Link href="/post">Post</Link>}
             {authUser && <Link href="/bookmarks">Bookmarks</Link>}
             {authUser && profile && <Link href={`/profile/${profile.uid}`}>Profile</Link>}
             {authUser && !profile && <Link href="/complete-profile">Complete Profile</Link>}

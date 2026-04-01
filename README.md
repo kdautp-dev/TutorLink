@@ -1,11 +1,11 @@
-# TutorLink
+# Homework4Cash
 
-TutorLink is a full-stack MVP that connects students with tutors for assignment-specific help. The frontend is built with Next.js, authentication and data storage use Firebase Authentication + Firestore, and the project is ready to deploy on Vercel.
+Homework4Cash is a full-stack MVP that connects students with tutors for assignment-specific help. The frontend is built with Next.js, authentication and data storage use Firebase Authentication + Firestore, and the project is ready to deploy on Vercel.
 
 ## Project Structure
 
 ```text
-TutorLink/
+Homework4Cash/
 ├── components/
 │   ├── AuthProvider.js
 │   ├── Layout.js
@@ -50,7 +50,7 @@ TutorLink/
 
 - Email/password sign up and login with Firebase Auth
 - Firestore user profiles with role, subjects, bio, rating, and review count
-- Student post creation with validation
+- Assignment ad creation with validation
 - Dedicated assignments marketplace with subject and price filtering
 - Tutor finder directory with tutor-created listings
 - Tutor claim flow that marks posts as `in-progress`

@@ -1,7 +1,7 @@
 {
   "name": "homeworkswap",
   "version": "1.0.0",
-  "description": "TutorLink MVP built with Next.js and Firebase",
+  "description": "Homework4Cash MVP built with Next.js and Firebase",
   "private": true,
   "scripts": {
     "dev": "next dev",

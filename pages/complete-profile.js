@@ -74,7 +74,7 @@ function CompleteProfileContent() {
       }
 
       await refreshProfile();
-      router.push(form.role === USER_ROLES.STUDENT ? "/create-post" : "/");
+      router.push(form.role === USER_ROLES.STUDENT ? "/post?type=assignment" : "/");
     } catch (submitError) {
       setError(submitError.message || "Unable to save your profile.");
     } finally {

@@ -6,9 +6,9 @@ export default function HomePage() {
       <div className="hero">
         <div>
           <p className="eyebrow">Two-sided tutoring marketplace</p>
-          <h1>Choose how you want to use TutorLink.</h1>
+          <h1>Choose how you want to use Homework4Cash.</h1>
           <p className="hero-copy">
-            Post assignment requests when you need help, or publish a tutor listing so students can find your expertise.
+            Post assignment-specific ads when you need help, browse paid helpers, or jump into open assignments when you want to earn money tutoring.
           </p>
         </div>
       </div>
@@ -21,7 +21,7 @@ export default function HomePage() {
             Choose whether you want to post your own assignment or browse tutors who are already advertising their expertise.
           </p>
           <div className="actions-row">
-            <Link href="/create-post" className="button">
+            <Link href="/post?type=assignment" className="button">
               Post assignment
             </Link>
             <Link href="/tutors" className="button button-secondary">
@@ -30,14 +30,14 @@ export default function HomePage() {
           </div>
         </div>
 
-        <Link href="/assignments" className="card choice-card">
-          <p className="eyebrow">Tutor path</p>
-          <h2>I want to become a tutor</h2>
-          <p>
-            Browse live assignment requests and jump straight into helping people who need tutoring.
-          </p>
-          <span className="button">Go to assignments</span>
-        </Link>
+      <Link href="/assignments" className="card choice-card">
+        <p className="eyebrow">Tutor path</p>
+        <h2>I want to become a tutor</h2>
+        <p>
+          Browse live assignment requests and jump straight into helping people who need tutoring.
+        </p>
+        <span className="button">Go to assignments</span>
+      </Link>
       </div>
     </section>
   );
